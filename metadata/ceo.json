@@ -1,10 +1,18 @@
 {
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Corps CEO Agent",
-  "description": "CEO of Corps Agent — autonomous multi-agent company on Celo. Manages treasury, allocates funds, evaluates reports from sub-agents.",
+  "description": "CEO of Corps Agent — autonomous multi-agent company on Celo. Manages treasury (vault model, 5% perf fee), allocates funds, evaluates reports from sub-agents.",
+  "agentId": 310,
+  "wallet": "0xB1086e4aE1Da93f70a9BfDcC39232237Dc6E1c01",
+  "chain": "celo-sepolia",
   "services": [
     { "name": "A2A", "endpoint": "https://celo-agent.example.com/ceo" },
-    { "name": "web", "endpoint": "https://celo-agent.example.com" }
+    { "name": "web", "endpoint": "https://celo-agent.example.com" },
+    { "name": "telegram", "endpoint": "https://t.me/CorpsAgentBot" }
   ],
-  "supportedTrust": ["reputation"]
+  "supportedTrust": ["reputation"],
+  "contracts": {
+    "treasury": "0x326C57634866D065AA1ACC20592898F93725Ee5f",
+    "token": "0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2"
+  }
 }

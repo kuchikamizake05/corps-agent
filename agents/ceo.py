@@ -30,7 +30,8 @@ price = parse_uint(cast("call", TREASURY, "sharePrice()(uint256)", "--rpc-url", 
 vault_bal = parse_uint(cast("call", TOKEN, "balanceOf(address)(uint256)", TREASURY, "--rpc-url", RPC))
 fee = parse_uint(cast("call", TREASURY, "pendingOwnerFee()(uint256)", "--rpc-url", RPC))
 
-print(f"=== CEO Report ===")
+print(f"=== CEO Report (Agent #310) ===")
+print(f"ERC-8004: https://sepolia.celoscan.io/token/0x8004A818BFB912233c491871b3d84c89A494BD9e?a=310")
 print(f"Assets:    {assets / 1e18:.6f} tUSDC")
 print(f"Shares:    {shares / 1e18:.6f}")
 print(f"Price:     {price / 1e18:.6f} tUSDC")

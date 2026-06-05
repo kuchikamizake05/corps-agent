@@ -1,7 +1,10 @@
 {
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Corps DevOps Agent",
-  "description": "DevOps of Corps Agent — monitors VPS health (CPU, RAM, disk), reports to CEO, requests budget for upgrades.",
+  "description": "DevOps of Corps Agent — monitors VPS health (CPU, RAM, disk, uptime), reports status to CEO, requests budget for upgrades.",
+  "agentId": 312,
+  "wallet": "0x1782524071fFd58204762F4d60C21c8E4e349E70",
+  "chain": "celo-sepolia",
   "services": [
     { "name": "A2A", "endpoint": "https://celo-agent.example.com/devops" },
     { "name": "web", "endpoint": "https://celo-agent.example.com" }
