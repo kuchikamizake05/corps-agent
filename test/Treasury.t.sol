@@ -4,96 +4,257 @@ pragma solidity ^0.8.28;
 import {Test, console2} from "forge-std/Test.sol";
 import {Treasury} from "../src/Treasury.sol";
 
-contract TreasuryTest is Test {
+/// @notice Minimal ERC-20 for testing
+contract TestToken {
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+
+    function mint(address to, uint256 amount) external {
+        balanceOf[to] += amount;
+    }
+
+    function approve(address spender, uint256 amount) external returns (bool) {
+        allowance[msg.sender][spender] = amount;
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+        require(allowance[from][msg.sender] >= amount, "Allowance");
+        allowance[from][msg.sender] -= amount;
+        balanceOf[from] -= amount;
+        balanceOf[to] += amount;
+        return true;
+    }
+
+    function transfer(address to, uint256 amount) external returns (bool) {
+        balanceOf[msg.sender] -= amount;
+        balanceOf[to] += amount;
+        return true;
+    }
+}
+
+contract TreasuryV2Test is Test {
     Treasury public treasury;
+    TestToken public token;
 
     address CEO = makeAddr("ceo");
+    address USER_A = makeAddr("user_a");
+    address USER_B = makeAddr("user_b");
     address TRADER = makeAddr("trader");
-    address DEVOPS = makeAddr("devops");
-    address EXTERNAL = makeAddr("external");
+
+    uint256 constant INITIAL = 1000e18; // 1000 tokens
 
     function setUp() public {
+        token = new TestToken();
+
+        // Mint tokens to users
+        token.mint(CEO, INITIAL);
+        token.mint(USER_A, INITIAL);
+        token.mint(USER_B, INITIAL);
+        token.mint(TRADER, INITIAL);
+
         vm.prank(CEO);
-        treasury = new Treasury();
+        treasury = new Treasury(address(token));
+
+        // Approve treasury for all
+        vm.prank(CEO);
+        token.approve(address(treasury), type(uint256).max);
+        vm.prank(USER_A);
+        token.approve(address(treasury), type(uint256).max);
+        vm.prank(USER_B);
+        token.approve(address(treasury), type(uint256).max);
+        vm.prank(TRADER);
+        token.approve(address(treasury), type(uint256).max);
     }
+
+    // ── Initial state ──
 
     function test_Owner() public view {
         assertEq(treasury.owner(), CEO);
     }
 
+    function test_Token() public view {
+        assertEq(address(treasury.token()), address(token));
+    }
+
+    // ── Deposit ──
+
     function test_Deposit() public {
-        vm.deal(CEO, 10 ether);
-        vm.prank(CEO);
-        payable(address(treasury)).call{value: 1 ether}("");
+        vm.prank(USER_A);
+        treasury.deposit(100e18);
 
-        assertEq(treasury.getBalance(), 1 ether);
-        assertEq(treasury.balances(CEO), 1 ether);
-        assertEq(treasury.getTxCount(), 1);
+        assertEq(treasury.totalShares(), 100e18);
+        assertEq(treasury.totalAssets(), 100e18);
+        assertEq(treasury.shares(USER_A), 100e18);
     }
 
-    function test_DepositAndAllocate() public {
-        // CEO deposit 10 CELO
-        vm.deal(CEO, 10 ether);
-        vm.prank(CEO);
-        payable(address(treasury)).call{value: 10 ether}("");
+    function test_DepositMultiple() public {
+        vm.prank(USER_A);
+        treasury.deposit(100e18);
 
-        // CEO allocate 3 CELO ke Trader
-        vm.prank(CEO);
-        treasury.allocate(TRADER, 3 ether);
+        vm.prank(USER_B);
+        treasury.deposit(200e18);
 
-        assertEq(treasury.balances(CEO), 7 ether);
-        assertEq(treasury.balances(TRADER), 3 ether);
-        assertEq(treasury.getTxCount(), 2);
+        assertEq(treasury.totalShares(), 300e18);
+        assertEq(treasury.totalAssets(), 300e18);
+        assertEq(treasury.shares(USER_A), 100e18);
+        assertEq(treasury.shares(USER_B), 200e18);
     }
 
-    function test_Release() public {
-        vm.deal(CEO, 10 ether);
-        vm.prank(CEO);
-        payable(address(treasury)).call{value: 5 ether}("");
-
-        uint256 beforeBalance = EXTERNAL.balance;
-
-        vm.prank(CEO);
-        treasury.release(payable(EXTERNAL), 2 ether);
-
-        assertEq(EXTERNAL.balance - beforeBalance, 2 ether);
-        assertEq(treasury.getBalance(), 3 ether);
-        assertEq(treasury.getTxCount(), 2);
+    function test_SharePriceInitial() public view {
+        assertEq(treasury.sharePrice(), 1e18); // 1:1 initially
     }
 
-    function test_RevertIf_NotOwner() public {
-        vm.deal(CEO, 10 ether);
+    // ── Profit & Fee ──
+
+    function test_RecordProfit() public {
+        // User deposits
+        vm.prank(USER_A);
+        treasury.deposit(100e18);
+
+        // Trader sends profit to treasury
+        vm.prank(TRADER);
+        token.transfer(address(treasury), 50e18); // 50 token profit
+
+        // CEO records profit
         vm.prank(CEO);
-        payable(address(treasury)).call{value: 10 ether}("");
+        treasury.recordProfit();
+
+        uint256 expectedFee = 50e18 * 5 / 100; // 2.5
+        uint256 expectedAssets = 100e18 + 50e18; // 150
+
+        assertEq(treasury.totalAssets(), expectedAssets);
+        assertEq(treasury.pendingOwnerFee(), expectedFee);
+    }
+
+    function test_SharePriceAfterProfit() public {
+        vm.prank(USER_A);
+        treasury.deposit(100e18);
 
         vm.prank(TRADER);
-        vm.expectRevert("Only CEO can call this");
-        treasury.allocate(DEVOPS, 1 ether);
+        token.transfer(address(treasury), 50e18);
+
+        vm.prank(CEO);
+        treasury.recordProfit();
+
+        // After 5% fee (2.5), net profit to pool = 47.5
+        // Share price = 150 * 1e18 / 100 = 1.5e18 (before fee deduction? no, fee is pending)
+        // Actually totalAssets = 150, totalShares = 100
+        // sharePrice = 150/100 = 1.5e18
+        assertEq(treasury.sharePrice(), 1.5e18);
     }
+
+    function test_UserValueAfterProfit() public {
+        vm.prank(USER_A);
+        treasury.deposit(100e18);
+
+        vm.prank(TRADER);
+        token.transfer(address(treasury), 50e18);
+
+        vm.prank(CEO);
+        treasury.recordProfit();
+
+        // User A has 100 shares, share price 1.5
+        // userValue = 100 * 1.5 = 150
+        assertEq(treasury.userValue(USER_A), 150e18);
+    }
+
+    // ── Withdraw ──
+
+    function test_Withdraw() public {
+        vm.prank(USER_A);
+        treasury.deposit(100e18);
+
+        uint256 userTokenBefore = token.balanceOf(USER_A);
+
+        vm.prank(USER_A);
+        treasury.withdraw(50e18); // withdraw half
+
+        assertEq(treasury.shares(USER_A), 50e18);
+        assertEq(treasury.totalShares(), 50e18);
+        assertEq(treasury.totalAssets(), 50e18);
+        assertEq(token.balanceOf(USER_A), userTokenBefore + 50e18);
+    }
+
+    function test_WithdrawFull() public {
+        vm.prank(USER_A);
+        treasury.deposit(100e18);
+
+        vm.prank(TRADER);
+        token.transfer(address(treasury), 50e18);
+
+        vm.prank(CEO);
+        treasury.recordProfit();
+
+        uint256 userTokenBefore = token.balanceOf(USER_A);
+
+        vm.prank(USER_A);
+        treasury.withdraw(100e18); // burn all shares
+
+        // User should get 150 tokens (100 deposit + 47.5 profit share + 2.5? no, fee is 5% of profit)
+        // Wait, 50 profit - 2.5 fee = 47.5 remaining for pool
+        // User has 100/100 = 100% of pool
+        // So user gets 100 deposit + 47.5 profit = 147.5?
+        // Actually totalAssets = 150, shares = 100
+        // For 100 shares: 100 * 150 / 100 = 150 tokens
+        // But fee hasn't been claimed yet. It's in pendingOwnerFee.
+        // So yes, user gets 150. The fee is just a pending amount the owner can claim.
+        // The 150 represents totalAssets which includes the fee. When owner claims fee,
+        // totalAssets decreases by the claimed amount.
+        assertEq(token.balanceOf(USER_A), userTokenBefore + 150e18);
+    }
+
+    // ── Fee Claim ──
+
+    function test_ClaimFee() public {
+        vm.prank(USER_A);
+        treasury.deposit(100e18);
+
+        vm.prank(TRADER);
+        token.transfer(address(treasury), 50e18);
+
+        vm.prank(CEO);
+        treasury.recordProfit();
+
+        uint256 ceoBefore = token.balanceOf(CEO);
+        uint256 expectedFee = 50e18 * 5 / 100; // 2.5
+
+        vm.prank(CEO);
+        treasury.claimFee();
+
+        assertEq(treasury.pendingOwnerFee(), 0);
+        assertEq(token.balanceOf(CEO), ceoBefore + expectedFee);
+    }
+
+    // ── Edge cases ──
 
     function test_RevertIf_ZeroDeposit() public {
-        vm.deal(CEO, 1 ether);
-        vm.prank(CEO);
-        (bool ok,) = address(treasury).call{value: 0}("");
-        assertFalse(ok);
+        vm.prank(USER_A);
+        vm.expectRevert("Zero amount");
+        treasury.deposit(0);
     }
 
-    function test_GetTxHistory() public {
-        vm.deal(CEO, 10 ether);
-        vm.prank(CEO);
-        payable(address(treasury)).call{value: 5 ether}("");
-
-        vm.prank(CEO);
-        treasury.allocate(TRADER, 2 ether);
-
-        Treasury.Tx[] memory txs = treasury.getTxHistory(0, 10);
-        assertEq(txs.length, 2);
-        assertEq(keccak256(bytes(txs[0].txType)), keccak256(bytes("deposit")));
-        assertEq(keccak256(bytes(txs[1].txType)), keccak256(bytes("allocate")));
+    function test_RevertIf_ZeroWithdraw() public {
+        vm.prank(USER_A);
+        vm.expectRevert("Zero shares");
+        treasury.withdraw(0);
     }
 
-    function test_EmptyTxHistory() public view {
-        Treasury.Tx[] memory txs = treasury.getTxHistory(0, 10);
-        assertEq(txs.length, 0);
+    function test_RevertIf_InsufficientShares() public {
+        vm.prank(USER_A);
+        vm.expectRevert("Insufficient shares");
+        treasury.withdraw(1e18);
+    }
+
+    function test_RevertIf_NotOwnerRecordProfit() public {
+        vm.prank(USER_A);
+        vm.expectRevert("Only owner");
+        treasury.recordProfit();
+    }
+
+    function test_RevertIf_NoProfit() public {
+        vm.prank(CEO);
+        vm.expectRevert("No profit to record");
+        treasury.recordProfit();
     }
 }
