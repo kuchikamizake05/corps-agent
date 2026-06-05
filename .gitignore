@@ -1,0 +1,30 @@
+# Corps Agent .gitignore
+
+# Keys & secrets
+.env
+
+# Build artifacts
+out/
+cache/
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IPFS
+ipfs-uploads/
+
+# Deployment logs (contains RPC URLs)
+broadcast/
+
+# Hermes cron symlinks
+.hermes/

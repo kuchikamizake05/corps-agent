@@ -1,0 +1,10 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Corps CEO Agent",
+  "description": "CEO of Corps Agent — autonomous multi-agent company on Celo. Manages treasury, allocates funds, evaluates reports from sub-agents.",
+  "services": [
+    { "name": "A2A", "endpoint": "https://celo-agent.example.com/ceo" },
+    { "name": "web", "endpoint": "https://celo-agent.example.com" }
+  ],
+  "supportedTrust": ["reputation"]
+}

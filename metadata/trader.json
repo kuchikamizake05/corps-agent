@@ -1,0 +1,10 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Corps Trader Agent",
+  "description": "Trader of Corps Agent — scans DEX prices (Uniswap V3, Ubeswap) and executes arbitrage opportunities on Celo.",
+  "services": [
+    { "name": "A2A", "endpoint": "https://celo-agent.example.com/trader" },
+    { "name": "web", "endpoint": "https://celo-agent.example.com" }
+  ],
+  "supportedTrust": ["reputation"]
+}

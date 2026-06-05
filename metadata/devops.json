@@ -1,0 +1,10 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Corps DevOps Agent",
+  "description": "DevOps of Corps Agent — monitors VPS health (CPU, RAM, disk), reports to CEO, requests budget for upgrades.",
+  "services": [
+    { "name": "A2A", "endpoint": "https://celo-agent.example.com/devops" },
+    { "name": "web", "endpoint": "https://celo-agent.example.com" }
+  ],
+  "supportedTrust": ["reputation"]
+}
