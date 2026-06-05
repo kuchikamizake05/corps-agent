@@ -1,68 +1,65 @@
 #!/usr/bin/env python3
-"""Corps Agent — CEO: evaluate agent reports, make allocation decisions"""
-
-import os
-import json
-import subprocess
+"""CEO Agent — record profit, claim fees, report"""
+import os, subprocess
 from pathlib import Path
-from web3 import Web3
-from dotenv import load_dotenv
 
-load_dotenv()
+env_file = Path(__file__).parent.parent / ".env"
+for line in env_file.read_text().splitlines():
+    if "=" in line and not line.startswith("#"):
+        k, v = line.split("=", 1)
+        os.environ.setdefault(k.strip(), v.strip())
 
-# ── Config ──────────────────────────────────────────────────────────────
-RPC_URL = os.environ.get("CELO_SEPOLIA_RPC")
-CEO_ADDRESS = os.environ.get("CEO_ADDRESS")
-CEO_PK = os.environ.get("CEO_PRIVATE_KEY")
-TRADER_ADDRESS = os.environ.get("TRADER_ADDRESS")
-DEVOPS_ADDRESS = os.environ.get("DEVOPS_ADDRESS")
-TREASURY_ADDR = os.environ.get("TREASURY_ADDRESS")
+RPC = "https://forno.celo-sepolia.celo-testnet.org"
+TREASURY = os.environ["TREASURY_ADDRESS"]
+TOKEN = os.environ["TOKEN"]
+CEO_PK = os.environ["CEO_PRIVATE_KEY"]
 
-w3 = Web3(Web3.HTTPProvider(RPC_URL))
-TREASURY_ABI = json.loads(Path(__file__).parent.parent.joinpath("out", "Treasury.sol", "Treasury.json").read_text())["abi"]
+def cast(*args):
+    result = subprocess.run(["cast"] + list(args), capture_output=True, text=True)
+    return result
 
-def main():
-    chain_id = w3.eth.chain_id
-    block = w3.eth.block_number
+def parse_uint(output):
+    val = output.stdout.strip().split()[0]
+    try: return int(val)
+    except: return 0
 
-    report = {
-        "agent": "ceo",
-        "timestamp": subprocess.getoutput("date -u +%Y-%m-%dT%H:%M:%SZ"),
-        "chain_id": chain_id,
-        "block": block,
-        "ceo_wallet": CEO_ADDRESS,
-        "treasury_address": TREASURY_ADDR,
-    }
+# Read state
+assets = parse_uint(cast("call", TREASURY, "totalAssets()(uint256)", "--rpc-url", RPC))
+shares = parse_uint(cast("call", TREASURY, "totalShares()(uint256)", "--rpc-url", RPC))
+price = parse_uint(cast("call", TREASURY, "sharePrice()(uint256)", "--rpc-url", RPC))
+vault_bal = parse_uint(cast("call", TOKEN, "balanceOf(address)(uint256)", TREASURY, "--rpc-url", RPC))
+fee = parse_uint(cast("call", TREASURY, "pendingOwnerFee()(uint256)", "--rpc-url", RPC))
 
-    # ── Treasury state ──
-    if TREASURY_ADDR and w3.is_connected():
-        treasury = w3.eth.contract(address=Web3.to_checksum_address(TREASURY_ADDR), abi=TREASURY_ABI)
-        try:
-            owner = treasury.functions.owner().call()
-            report["treasury_owner"] = owner
-            report["treasury_owner_match"] = (owner.lower() == CEO_ADDRESS.lower())
+print(f"=== CEO Report ===")
+print(f"Assets:    {assets / 1e18:.6f} tUSDC")
+print(f"Shares:    {shares / 1e18:.6f}")
+print(f"Price:     {price / 1e18:.6f} tUSDC")
+print(f"Vault bal: {vault_bal / 1e18:.6f} tUSDC")
+print(f"Fee owed:  {fee / 1e18:.6f} tUSDC")
+print(f"")
 
-            balance = treasury.functions.getBalance().call()
-            report["treasury_balance_celo"] = round(float(w3.from_wei(balance, "ether")), 6)
-
-            tx_count = treasury.functions.getTxCount().call()
-            report["treasury_tx_count"] = tx_count
-
-            # ── Decision logic ──
-            decisions = []
-            if tx_count == 0:
-                decisions.append("INIT: Treasury deployed, awaiting first deposit")
-
-            report["decisions"] = decisions
-            report["status"] = "OPERATIONAL" if owner else "ERROR"
-
-        except Exception as e:
-            report["status"] = "ERROR"
-            report["error"] = str(e)
+# Record profit if available
+if vault_bal > assets:
+    diff = vault_bal - assets
+    print(f"📈 Unrecorded profit: {diff / 1e18:.6f} tUSDC")
+    r = cast("send", TREASURY, "recordProfit()", "--private-key", CEO_PK, "--rpc-url", RPC, "--gas-limit", "100000")
+    if r.returncode == 0:
+        print(f"✅ Profit recorded!")
+        import time; time.sleep(2)  # wait for propagation
+        new_assets = parse_uint(cast("call", TREASURY, "totalAssets()(uint256)", "--rpc-url", RPC))
+        new_price = parse_uint(cast("call", TREASURY, "sharePrice()(uint256)", "--rpc-url", RPC))
+        new_fee = parse_uint(cast("call", TREASURY, "pendingOwnerFee()(uint256)", "--rpc-url", RPC))
+        print(f"   New assets: {new_assets / 1e18:.6f} tUSDC")
+        print(f"   New price:  {new_price / 1e18:.6f} tUSDC")
+        print(f"   Fee:        {new_fee / 1e18:.6f} tUSDC")
     else:
-        report["status"] = "NO_TREASURY"
+        print(f"❌ Failed: {r.stderr[-200:]}")
 
-    print(json.dumps(report, indent=2))
-
-if __name__ == "__main__":
-    main()
+# Claim fee if > 0.01
+if fee > 0.01 * 1e18:
+    print(f"\n💰 Claiming {fee / 1e18:.6f} tUSDC fee...")
+    r = cast("send", TREASURY, "claimFee()", "--private-key", CEO_PK, "--rpc-url", RPC, "--gas-limit", "100000")
+    if r.returncode == 0:
+        print(f"✅ Fee claimed!")
+    else:
+        print(f"❌ Failed: {r.stderr[-200:]}")

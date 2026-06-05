@@ -2,25 +2,30 @@
 pragma solidity ^0.8.28;
 
 import {Script, console2} from "forge-std/Script.sol";
+import {TestERC20} from "../src/TestERC20.sol";
 import {Treasury} from "../src/Treasury.sol";
 
-contract DeployTreasury is Script {
+contract DeployAll is Script {
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("CEO_PRIVATE_KEY");
+        uint256 pk = vm.envUint("CEO_PRIVATE_KEY");
+        address deployer = vm.addr(pk);
 
-        // USDm on Celo Sepolia testnet
-        address usdm = 0xdE9e4C3ce781b4bA68120d6261cbad65ce0aB00b;
+        vm.startBroadcast(pk);
 
-        console2.log("Deploying Treasury.sol v2...");
-        console2.log("Deployer (CEO):", vm.addr(deployerPrivateKey));
-        console2.log("Token: USDm at", usdm);
+        // 1. Deploy test token
+        TestERC20 token = new TestERC20();
+        console2.log("TestERC20:", address(token));
 
-        vm.startBroadcast(deployerPrivateKey);
+        // 2. Mint to wallets
+        token.mint(vm.envAddress("TRADER_ADDRESS"), 100 * 1e18);
+        token.mint(deployer, 1000 * 1e18);
+        token.mint(vm.envAddress("DEVOPS_ADDRESS"), 10 * 1e18);
+        console2.log("Minted: Trader 100, CEO 1000, DevOps 10");
 
-        Treasury treasury = new Treasury(usdm);
+        // 3. Deploy Treasury v2 with test token
+        Treasury treasury = new Treasury(address(token));
+        console2.log("Treasury v2:", address(treasury));
 
         vm.stopBroadcast();
-
-        console2.log("Treasury v2 deployed at:", address(treasury));
     }
 }

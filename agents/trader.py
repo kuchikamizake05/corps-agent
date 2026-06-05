@@ -1,74 +1,62 @@
 #!/usr/bin/env python3
-"""Corps Agent — Trader: scan DEX prices, report arbitrage opportunities"""
-
-import os
-import json
-import subprocess
+"""Trader Agent — send simulated profit to Treasury using cast"""
+import os, subprocess, sys
 from pathlib import Path
-from web3 import Web3
-from dotenv import load_dotenv
 
-load_dotenv()
+# Load env
+env_file = Path(__file__).parent.parent / ".env"
+for line in env_file.read_text().splitlines():
+    if "=" in line and not line.startswith("#"):
+        k, v = line.split("=", 1)
+        os.environ.setdefault(k.strip(), v.strip())
 
-# ── Config ──────────────────────────────────────────────────────────────
-RPC_URL = os.environ.get("CELO_SEPOLIA_RPC")
-CEO_ADDRESS = os.environ.get("CEO_ADDRESS")
-TRADER_ADDRESS = os.environ.get("TRADER_ADDRESS")
-TRADER_PK = os.environ.get("TRADER_PRIVATE_KEY")
-TREASURY_ADDR = os.environ.get("TREASURY_ADDRESS")
+RPC = "https://forno.celo-sepolia.celo-testnet.org"
+TREASURY = os.environ["TREASURY_ADDRESS"]
+TOKEN = os.environ["TOKEN"]
+TRADER_PK = os.environ["TRADER_PRIVATE_KEY"]
 
-w3 = Web3(Web3.HTTPProvider(RPC_URL))
+def cast(*args):
+    result = subprocess.run(["cast"] + list(args), capture_output=True, text=True)
+    return result
 
-# USDC on Celo Sepolia
-USDC = "0x01C5C0122039549AD1493B8220cABEdD739BC44E"
-USDC_DECIMALS = 6
+def parse_uint(output):
+    """Parse cast output: '99995000000000000000 [9.999e19]' → int"""
+    val = output.stdout.strip().split()[0]
+    try:
+        return int(val)
+    except:
+        return 0
 
-# Minimal ABI for balanceOf
-ERC20_ABI = '[{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"type":"function"}]'
+# Read state
+bal = cast("call", TOKEN, "balanceOf(address)(uint256)", os.environ["TRADER_ADDRESS"], "--rpc-url", RPC)
+treasury_assets = cast("call", TREASURY, "totalAssets()(uint256)", "--rpc-url", RPC)
+treasury_shares = cast("call", TREASURY, "totalShares()(uint256)", "--rpc-url", RPC)
+price = cast("call", TREASURY, "sharePrice()(uint256)", "--rpc-url", RPC)
+celo_bal = cast("balance", os.environ["TRADER_ADDRESS"], "--rpc-url", RPC)
 
-usdc_contract = w3.eth.contract(address=Web3.to_checksum_address(USDC), abi=ERC20_ABI)
+bal_i = parse_uint(bal)
+print(f"=== Trader Report ===")
+print(f"Trader:  {os.environ['TRADER_ADDRESS']}")
+print(f"CELO:    {parse_uint(celo_bal) / 1e18:.4f}")
+print(f"tUSDC:   {bal_i / 1e18:.4f}")
+print(f"")
+print(f"Treasury assets: {parse_uint(treasury_assets) / 1e18:.4f} tUSDC")
+print(f"Treasury shares: {parse_uint(treasury_shares) / 1e18:.4f}")
+print(f"Share price:     {parse_uint(price) / 1e18:.4f} tUSDC")
+print(f"")
 
-def main():
-    if not w3.is_connected():
-        print(json.dumps({"agent": "trader", "status": "ERROR", "error": "RPC not connected"}))
-        return
-
-    chain_id = w3.eth.chain_id
-    block = w3.eth.block_number
-
-    # ── Balances ──
-    celo_balance = w3.from_wei(w3.eth.get_balance(Web3.to_checksum_address(TRADER_ADDRESS)), "ether")
-    usdc_balance = usdc_contract.functions.balanceOf(Web3.to_checksum_address(TRADER_ADDRESS)).call() / 10**USDC_DECIMALS
-
-    report = {
-        "agent": "trader",
-        "timestamp": subprocess.getoutput("date -u +%Y-%m-%dT%H:%M:%SZ"),
-        "chain_id": chain_id,
-        "block": block,
-        "wallet": TRADER_ADDRESS,
-        "balances": {
-            "CELO": round(float(celo_balance), 6),
-            "USDC": round(float(usdc_balance), 2),
-        },
-        "scan_result": "testnet_no_liquidity",
-        "arbitrage_opportunity": None,
-    }
-
-    # ── On testnet, just log ──
-    if celo_balance > 0.01:
-        report["scan_result"] = "funded_ready"
+# Send simulated profit
+if bal_i >= int(0.005 * 1e18):
+    profit = min(bal_i, int(0.005 * 1e18))
+    print(f"Sending {profit / 1e18:.4f} tUSDC to Treasury...")
+    result = cast("send", TOKEN, f"transfer(address,uint256)", TREASURY, str(profit),
+                  "--private-key", TRADER_PK, "--rpc-url", RPC, "--gas-limit", "100000")
+    for line in result.stderr.splitlines():
+        if "transactionHash" in line or "status" in line or "Error" in line:
+            print(f"  {line.strip()}")
+    if result.returncode == 0:
+        print(f"✅ Done!")
     else:
-        report["scan_result"] = "low_funds"
-
-    # ── Treasury balance ──
-    if TREASURY_ADDR:
-        try:
-            treasury_celo = w3.from_wei(w3.eth.get_balance(Web3.to_checksum_address(TREASURY_ADDR)), "ether")
-            report["treasury_celo"] = round(float(treasury_celo), 6)
-        except:
-            pass
-
-    print(json.dumps(report, indent=2))
-
-if __name__ == "__main__":
-    main()
+        print(f"❌ Failed: {result.stderr[-200:]}")
+else:
+    print(f"⚠️  Low balance ({bal_i / 1e18:.4f}), need >= 0.005")
