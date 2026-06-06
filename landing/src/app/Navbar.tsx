@@ -6,6 +6,7 @@ const navLinks = [
   { label: 'Agents', href: '#agents' },
   { label: 'Audit', href: '#audit' },
   { label: 'Proof', href: '#proof' },
+  { label: 'Deposit', href: '/deposit' },
   { label: 'GitHub', href: 'https://github.com/kuchikamizake05/corps-agent', external: true },
 ]
 

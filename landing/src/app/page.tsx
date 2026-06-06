@@ -97,8 +97,8 @@ export default function Home() {
               Corps Agent is a small operating company made of three agents: CEO, Trader, and DevOps. Treasury actions are recorded on Celo, identities are registered through ERC-8004, and an auditor module keeps payout risk visible.
             </p>
             <div className="reveal mt-7 flex flex-wrap gap-3 [animation-delay:270ms]">
-              <a className="inline-flex h-10 items-center justify-center rounded-full bg-[#f5f257] px-5 text-sm font-semibold text-[#08090a] shadow-[0_14px_34px_rgba(245,242,87,.18)] transition hover:-translate-y-px hover:bg-[#ffff75]" href="https://t.me/CorpsAgentBot" target="_blank">Open bot demo</a>
-              <a className="inline-flex h-10 items-center justify-center rounded-full bg-[#15171a] px-5 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)] transition hover:-translate-y-px hover:bg-[#1b1e23]" href="https://github.com/kuchikamizake05/corps-agent" target="_blank">View source</a>
+              <a className="inline-flex h-10 items-center justify-center rounded-full bg-[#f5f257] px-5 text-sm font-semibold text-[#08090a] shadow-[0_14px_34px_rgba(245,242,87,.18)] transition hover:-translate-y-px hover:bg-[#ffff75]" href="/deposit">Deposit demo</a>
+              <a className="inline-flex h-10 items-center justify-center rounded-full bg-[#15171a] px-5 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)] transition hover:-translate-y-px hover:bg-[#1b1e23]" href="https://t.me/CorpsAgentBot" target="_blank" rel="noreferrer">Open bot</a>
             </div>
           </div>
 
