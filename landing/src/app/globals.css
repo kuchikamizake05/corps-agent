@@ -2079,3 +2079,55 @@ html.is-scrolled .nav-row::before,
 html.is-scrolled .nav-row::after {
   display: none !important;
 }
+
+/* ─── Glass only on pill, not wrapper/backdrop ─────────────── */
+nav.topnav {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.is-scrolled nav.topnav {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.nav-row {
+  isolation: isolate;
+}
+
+html.is-scrolled .nav-row {
+  background: rgba(10, 11, 13, .72) !important;
+  background-image: linear-gradient(180deg, rgba(25,27,31,.76), rgba(8,9,10,.68)) !important;
+  backdrop-filter: blur(42px) saturate(180%) contrast(1.05) !important;
+  -webkit-backdrop-filter: blur(42px) saturate(180%) contrast(1.05) !important;
+  box-shadow:
+    0 24px 80px rgba(0,0,0,.68),
+    0 0 0 1px rgba(252,255,82,.04),
+    inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
+
+html.is-scrolled .nav-row::before {
+  content: '' !important;
+  display: block !important;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: rgba(8,9,10,.18);
+}
+
+html.is-scrolled .nav-row::after {
+  display: none !important;
+}
+
+.nav-brand,
+.nav-center,
+.nav-actions {
+  position: relative;
+  z-index: 2;
+}
