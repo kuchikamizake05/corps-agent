@@ -2049,3 +2049,33 @@ footer,
 .liquid-ether-layer {
   z-index: 0 !important;
 }
+
+/* ─── Final navbar glass: slight transparency + heavy blur ─── */
+nav.topnav {
+  background: rgba(8,9,10,.82) !important;
+  backdrop-filter: blur(18px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(150%) !important;
+}
+
+html.is-scrolled nav.topnav {
+  background: linear-gradient(180deg, rgba(8,9,10,.76), rgba(8,9,10,.18) 72%, transparent) !important;
+}
+
+html.is-scrolled .nav-row {
+  background:
+    linear-gradient(180deg, rgba(18,20,23,.82), rgba(8,9,10,.74)),
+    rgba(8,9,10,.72) !important;
+  backdrop-filter: blur(38px) saturate(180%) contrast(1.04) !important;
+  -webkit-backdrop-filter: blur(38px) saturate(180%) contrast(1.04) !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow:
+    0 24px 80px rgba(0,0,0,.66),
+    0 0 0 1px rgba(252,255,82,.035),
+    inset 0 1px 0 rgba(255,255,255,.026) !important;
+}
+
+html.is-scrolled .nav-row::before,
+html.is-scrolled .nav-row::after {
+  display: none !important;
+}
