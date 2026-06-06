@@ -62,31 +62,25 @@ export default function Home() {
         <div className="orbit orbit-b" />
       </div>
       <nav className="topnav">
-        <div className="container-x py-3">
-          <div className="nav-shell">
-            <a href="#top" className="nav-brand" aria-label="Corps Agent home">
-              <span className="brand-mark nav-logo">CA</span>
-              <span className="nav-brand-copy">
-                <span>Corps Agent</span>
-                <span>celo / treasury ops</span>
-              </span>
-            </a>
+        <div className="container-x nav-row">
+          <a href="#top" className="nav-brand" aria-label="Corps Agent home">
+            <span className="nav-logo">CA</span>
+            <span className="nav-brand-copy">
+              <span>Corps Agent</span>
+              <span>Autonomous treasury ops</span>
+            </span>
+          </a>
 
-            <div className="nav-center" aria-label="Primary navigation">
-              <a className="nav-link" href="#agents"><span>Agents</span></a>
-              <a className="nav-link" href="#audit"><span>Audit</span></a>
-              <a className="nav-link" href="#proof"><span>Proof</span></a>
-              <a className="nav-link" href="https://github.com/kuchikamizake05/corps-agent" target="_blank"><span>GitHub</span></a>
-            </div>
+          <div className="nav-center" aria-label="Primary navigation">
+            <a className="nav-link" href="#agents">Agents</a>
+            <a className="nav-link" href="#audit">Audit</a>
+            <a className="nav-link" href="#proof">Proof</a>
+            <a className="nav-link" href="https://github.com/kuchikamizake05/corps-agent" target="_blank">GitHub</a>
+          </div>
 
-            <div className="nav-actions">
-              <a className="nav-status" href={`https://sepolia.celoscan.io/address/${TREASURY}`} target="_blank">
-                <span className="dot" />
-                <span>live</span>
-                <span className="nav-status-chain">Celo</span>
-              </a>
-              <a className="nav-cta" href="https://t.me/CorpsAgentBot" target="_blank">Open bot</a>
-            </div>
+          <div className="nav-actions">
+            <a className="nav-secondary" href={`https://sepolia.celoscan.io/address/${TREASURY}`} target="_blank">Contract</a>
+            <a className="nav-cta" href="https://t.me/CorpsAgentBot" target="_blank">Open bot</a>
           </div>
         </div>
       </nav>
