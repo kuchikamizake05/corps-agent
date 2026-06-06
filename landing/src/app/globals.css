@@ -2179,3 +2179,83 @@ html.is-scrolled .nav-cta {
 html.is-scrolled .nav-row {
   border-radius: 999px !important;
 }
+
+/* ─── Navbar final geometry: full top, clean floating pill ─── */
+nav.topnav {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100vw !important;
+  height: 68px !important;
+  padding: 0 !important;
+  background: #08090a !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+.nav-row {
+  width: 100% !important;
+  max-width: none !important;
+  height: 68px !important;
+  margin: 0 !important;
+  padding-inline: max(24px, calc((100vw - 1180px) / 2)) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+html.is-scrolled nav.topnav {
+  height: 76px !important;
+  padding-top: 10px !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  pointer-events: none;
+}
+
+html.is-scrolled .nav-row {
+  pointer-events: auto;
+  width: min(1120px, calc(100vw - 48px)) !important;
+  max-width: min(1120px, calc(100vw - 48px)) !important;
+  height: 56px !important;
+  margin-inline: auto !important;
+  padding-inline: 18px !important;
+  border-radius: 999px !important;
+  background: #090a0c !important;
+  background-image: linear-gradient(180deg, #15171a 0%, #090a0c 72%, #07080a 100%) !important;
+  box-shadow:
+    0 18px 58px rgba(0,0,0,.50),
+    0 0 0 1px rgba(252,255,82,.045),
+    inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
+
+html.is-scrolled .nav-row::before,
+html.is-scrolled .nav-row::after,
+.nav-row::before,
+.nav-row::after {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  nav.topnav {
+    height: 62px !important;
+  }
+  .nav-row {
+    height: 62px !important;
+    padding-inline: 16px !important;
+  }
+  html.is-scrolled nav.topnav {
+    height: 68px !important;
+    padding-top: 8px !important;
+  }
+  html.is-scrolled .nav-row {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    height: 52px !important;
+  }
+}
