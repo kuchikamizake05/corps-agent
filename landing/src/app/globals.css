@@ -1573,3 +1573,68 @@ footer,
 .scanline {
   opacity: .08 !important;
 }
+
+/* ─── Obvious Liquid Ether fallback/overlay ────────────────── */
+.liquid-ether-layer {
+  z-index: 0 !important;
+  opacity: 1 !important;
+  background:
+    radial-gradient(900px 520px at 18% 12%, rgba(232, 238, 58, .18), transparent 58%),
+    radial-gradient(760px 460px at 78% 18%, rgba(126, 138, 28, .20), transparent 60%),
+    radial-gradient(920px 520px at 52% 78%, rgba(188, 150, 34, .13), transparent 62%) !important;
+}
+
+.liquid-ether-layer::before {
+  content: '';
+  position: absolute;
+  inset: -22%;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(45% 38% at 25% 20%, rgba(235, 240, 54, .26), transparent 62%),
+    radial-gradient(38% 34% at 70% 26%, rgba(128, 145, 35, .22), transparent 65%),
+    radial-gradient(46% 42% at 52% 74%, rgba(202, 156, 30, .18), transparent 68%);
+  filter: blur(26px) saturate(1.15);
+  mix-blend-mode: screen;
+  animation: liquid-ether-drift 18s ease-in-out infinite alternate;
+}
+
+.liquid-ether-layer::after {
+  z-index: 2;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(8,9,10,0), rgba(8,9,10,.12) 48%, rgba(8,9,10,.48) 100%),
+    linear-gradient(180deg, rgba(8,9,10,.03), rgba(8,9,10,.22)) !important;
+}
+
+.liquid-ether-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: .9;
+}
+
+.bg-grid {
+  opacity: .07 !important;
+}
+
+.ambient-bg {
+  pointer-events: none;
+}
+
+@keyframes liquid-ether-drift {
+  0% {
+    transform: translate3d(-4%, -2%, 0) rotate(-7deg) scale(1);
+  }
+  45% {
+    transform: translate3d(4%, 3%, 0) rotate(5deg) scale(1.08);
+  }
+  100% {
+    transform: translate3d(1%, -4%, 0) rotate(10deg) scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liquid-ether-layer::before {
+    animation: none !important;
+  }
+}
