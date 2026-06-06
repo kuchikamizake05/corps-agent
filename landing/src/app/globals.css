@@ -1488,3 +1488,62 @@ footer,
 .orbit {
   opacity: .16 !important;
 }
+
+/* ─── Liquid Ether WebGL layer ─────────────────────────────── */
+.liquid-ether-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .82;
+  filter: saturate(.86) contrast(1.02) brightness(.86);
+}
+
+.liquid-ether-canvas,
+.liquid-ether-canvas canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.liquid-ether-layer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 45% 4%, rgba(8,9,10,.00), rgba(8,9,10,.35) 48%, rgba(8,9,10,.82) 100%),
+    linear-gradient(180deg, rgba(8,9,10,.18), rgba(8,9,10,.64));
+}
+
+.dark-veil-layer {
+  display: none !important;
+}
+
+.ambient-bg {
+  z-index: 1 !important;
+  background: transparent !important;
+}
+
+.bg-grid {
+  opacity: .16 !important;
+  mask-image: radial-gradient(ellipse at 48% 12%, black 0%, rgba(0,0,0,.55) 36%, transparent 76%) !important;
+}
+
+.beam,
+.orbit {
+  opacity: .12 !important;
+}
+
+nav.topnav,
+section,
+footer,
+.hairline {
+  position: relative;
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liquid-ether-layer {
+    display: none;
+  }
+}

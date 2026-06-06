@@ -1,4 +1,4 @@
-import DarkVeil from './DarkVeil'
+import LiquidEther from './LiquidEther'
 
 const TREASURY = '0xbC46a13BEEDd08592e69ac0EDF20893416A406de'
 const TOKEN = '0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2'
@@ -74,7 +74,7 @@ export default function Home() {
   return (
     <main>
       <div className="scroll-progress" aria-hidden="true" />
-      <div className="dark-veil-layer" aria-hidden="true"><DarkVeil /></div>
+      <div className="liquid-ether-layer" aria-hidden="true"><LiquidEther /></div>
       <div className="ambient-bg" aria-hidden="true">
         <div className="bg-grid" />
         <div className="bg-noise" />

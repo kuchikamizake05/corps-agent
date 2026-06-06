@@ -38,47 +38,61 @@ float noise(vec2 p) {
 float fbm(vec2 p) {
   float v = 0.0;
   float a = 0.5;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 6; i++) {
     v += a * noise(p);
-    p = rot(0.47) * p * 2.04;
-    a *= 0.52;
+    p = rot(0.52) * p * 2.02 + 0.17;
+    a *= 0.5;
   }
   return v;
 }
 
 void main() {
   vec2 uv = (gl_FragCoord.xy - 0.5 * uResolution.xy) / min(uResolution.x, uResolution.y);
-  float t = uTime * 0.055;
+  float t = uTime * 0.038;
 
-  vec2 p = uv;
-  p.x += 0.14 * sin(p.y * 3.0 + t * 2.0);
-  p.y += 0.10 * cos(p.x * 2.4 - t * 1.6);
+  vec2 q = uv;
+  q += vec2(
+    fbm(uv * 1.55 + vec2(t * 1.4, -t * 0.6)),
+    fbm(uv * 1.55 + vec2(-t * 0.9, t * 1.2))
+  ) * 0.42;
 
-  float veil = fbm(p * 2.15 + vec2(t, -t * 0.7));
-  float bands = sin((p.x + p.y) * 8.0 + veil * 3.5 + t * 6.0) * 0.5 + 0.5;
-  float shape = smoothstep(0.24, 0.92, veil * 0.72 + bands * 0.30);
+  vec2 r = q;
+  r += vec2(
+    fbm(q * 2.25 + vec2(-t * 1.8, t)),
+    fbm(q * 2.25 + vec2(t, -t * 1.5))
+  ) * 0.32;
 
-  vec3 ink = vec3(0.025, 0.028, 0.030);
-  vec3 accent = vec3(0.86, 0.88, 0.22);
-  vec3 blue = vec3(0.10, 0.18, 0.25);
-  vec3 col = ink + accent * shape * 0.20 + blue * veil * 0.18;
+  float ether = fbm(r * 2.7 + t);
+  float liquid = sin((r.x * 2.6 + r.y * 3.1 + ether * 2.4 + t * 3.2)) * 0.5 + 0.5;
+  float veins = smoothstep(0.56, 0.82, liquid * 0.62 + ether * 0.48);
+  float soft = smoothstep(0.20, 0.92, ether);
 
-  float vignette = smoothstep(0.95, 0.18, length(uv));
+  vec3 base = vec3(0.020, 0.022, 0.024);
+  vec3 olive = vec3(0.26, 0.29, 0.09);
+  vec3 lime = vec3(0.82, 0.84, 0.18);
+  vec3 warm = vec3(0.48, 0.36, 0.08);
+
+  vec3 col = base;
+  col += olive * soft * 0.34;
+  col += lime * veins * 0.22;
+  col += warm * pow(liquid, 3.0) * 0.16;
+
+  float vignette = smoothstep(1.02, 0.14, length(uv));
   col *= vignette;
-  col += vec3(0.006) * noise(gl_FragCoord.xy + uTime);
+  col += vec3(0.006) * noise(gl_FragCoord.xy + uTime * 14.0);
 
   gl_FragColor = vec4(col, 1.0);
 }
 `
 
-export default function DarkVeil() {
+export default function LiquidEther() {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
 
-    const renderer = new Renderer({ alpha: true, antialias: false, dpr: Math.min(window.devicePixelRatio, 1.5) })
+    const renderer = new Renderer({ alpha: true, antialias: false, dpr: Math.min(window.devicePixelRatio, 1.35) })
     const gl = renderer.gl
     el.appendChild(gl.canvas)
 
@@ -119,5 +133,5 @@ export default function DarkVeil() {
     }
   }, [])
 
-  return <div ref={ref} className="dark-veil-canvas" />
+  return <div ref={ref} className="liquid-ether-canvas" />
 }
