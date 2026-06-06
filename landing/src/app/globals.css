@@ -833,7 +833,7 @@ a.link-card,
 }
 
 .section-hero {
-  padding-top: 96px;
+  padding-top: 56px;
   padding-bottom: 72px;
 }
 
@@ -972,7 +972,7 @@ a.link-card,
     padding-bottom: 64px;
   }
   .section-hero {
-    padding-top: 72px;
+    padding-top: 40px;
     padding-bottom: 56px;
   }
   .metric-grid {
