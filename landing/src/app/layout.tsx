@@ -1,20 +1,37 @@
 import type { Metadata } from 'next'
+import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  weight: ['300', '400', '500', '600'],
+  display: 'swap',
+})
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  weight: ['400', '500'],
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
-  title: 'Corps Agent — Multi-Agent Company on Celo',
-  description: 'An autonomous AI company running 24/7 on Celo blockchain. CEO, Trader, and DevOps agents registered as ERC-8004 identities.',
+  title: 'Corps Agent — Autonomous treasury ops on Celo',
+  description:
+    'Three on-chain agents running 24/7 on Celo Sepolia. ERC-8004 identities, transparent treasury, on-chain audit. Built for the Celo Onchain Agents hackathon.',
   openGraph: {
-    title: 'Corps Agent — Multi-Agent Company on Celo',
-    description: 'Autonomous AI agents running 24/7 on Celo. CEO, Trader & DevOps — all ERC-8004 registered.',
+    title: 'Corps Agent — Autonomous treasury ops on Celo',
+    description:
+      'Three on-chain agents running 24/7 on Celo Sepolia. ERC-8004 identities, transparent treasury, on-chain audit.',
     type: 'website',
-  }
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen">{children}</body>
+    <html lang="en" className={`${inter.variable} ${mono.variable}`}>
+      <body>{children}</body>
     </html>
   )
 }
