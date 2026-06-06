@@ -126,17 +126,17 @@ export default function Home() {
 
       <div className="hairline" />
 
-      <section className="container-x section-y">
+      <section className="mx-auto w-full max-w-[1180px] px-6 py-[72px] md:px-8 md:py-[88px]">
         <SectionHeader eyebrow="Why it matters" title="Community treasuries need operators that can be audited." copy="The prototype focuses on repeatable treasury actions: deposits, profit recording, community payouts, and risk checks with public proof." />
         <div className="grid gap-4 md:grid-cols-3">
-          {why.map(([title, copy], index) => <div className="card hover-lift reveal p-6" style={{ animationDelay: `${index * 70}ms` }} key={title}><h3 className="h3">{title}</h3><p className="body mt-3">{copy}</p></div>)}
+          {why.map(([title, copy], index) => <div className="reveal rounded-[24px] bg-[#0d0f12] p-6 shadow-[0_0_0_1px_rgba(255,255,255,.06),inset_0_1px_0_rgba(255,255,255,.03)] transition hover:-translate-y-1 hover:bg-[#101216]" style={{ animationDelay: `${index * 70}ms` }} key={title}><h3 className="text-lg font-semibold tracking-[-.03em] text-white">{title}</h3><p className="mt-3 text-sm leading-6 text-[#a1a7b0]">{copy}</p></div>)}
         </div>
       </section>
 
-      <section id="agents" className="container-x section-y pt-4">
+      <section id="agents" className="mx-auto w-full max-w-[1180px] px-6 py-[72px] pt-4 md:px-8 md:py-[88px]">
         <SectionHeader eyebrow="Agent registry" title="Clear roles, minimal surface area." copy="Each unit maps to a concrete runtime responsibility and a verifiable identity or module in the system." />
-        <div className="card reveal overflow-hidden">
-          <table className="tbl"><thead><tr><th>ID</th><th>Name</th><th>Responsibility</th><th className="hidden md:table-cell">Runtime notes</th><th>Status</th></tr></thead><tbody>{agents.map(([id, name, role, notes, status]) => <tr className="row-motion" key={id}><td className="font-mono text-[#8a8f98]">#{id}</td><td className="font-medium text-white">{name}</td><td>{role}</td><td className="hidden text-[#8a8f98] md:table-cell">{notes}</td><td><span className="tag">{status}</span></td></tr>)}</tbody></table>
+        <div className="reveal overflow-hidden rounded-[24px] bg-[#0d0f12] shadow-[0_0_0_1px_rgba(255,255,255,.06),inset_0_1px_0_rgba(255,255,255,.03)]">
+          <table className="w-full border-collapse text-left text-sm text-[#a1a7b0]"><thead><tr className="border-b border-white/[.06] text-[11px] uppercase tracking-[.14em] text-[#62666d]"><th className="px-5 py-4 font-semibold">ID</th><th className="px-5 py-4 font-semibold">Name</th><th className="px-5 py-4 font-semibold">Responsibility</th><th className="hidden px-5 py-4 font-semibold md:table-cell">Runtime notes</th><th className="px-5 py-4 font-semibold">Status</th></tr></thead><tbody>{agents.map(([id, name, role, notes, status]) => <tr className="border-b border-white/[.045] transition hover:bg-white/[.025] last:border-0" key={id}><td className="px-5 py-4 font-mono text-[#8a8f98]">#{id}</td><td className="px-5 py-4 font-medium text-white">{name}</td><td className="px-5 py-4">{role}</td><td className="hidden px-5 py-4 text-[#8a8f98] md:table-cell">{notes}</td><td className="px-5 py-4"><span className="rounded-full bg-[#f5f257]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[.12em] text-[#f5f257]">{status}</span></td></tr>)}</tbody></table>
         </div>
       </section>
 
@@ -155,9 +155,9 @@ export default function Home() {
 
       <div className="hairline" />
 
-      <section className="container-x section-y">
+      <section className="mx-auto w-full max-w-[1180px] px-6 py-[72px] md:px-8 md:py-[88px]">
         <SectionHeader eyebrow="Built for Celo" title="Stablecoin-native operations, not speculative mechanics." copy="The demo is shaped around cheap payments, public agent identity, and explorer-readable treasury proof." />
-        <div className="grid gap-4 md:grid-cols-4">{celo.map(([title, copy]) => <div className="card p-5" key={title}><h3 className="h3">{title}</h3><p className="body mt-3">{copy}</p></div>)}</div>
+        <div className="grid gap-4 md:grid-cols-4">{celo.map(([title, copy]) => <div className="rounded-[22px] bg-[#0d0f12] p-5 shadow-[0_0_0_1px_rgba(255,255,255,.06),inset_0_1px_0_rgba(255,255,255,.03)]" key={title}><h3 className="text-base font-semibold tracking-[-.03em] text-white">{title}</h3><p className="mt-3 text-sm leading-6 text-[#a1a7b0]">{copy}</p></div>)}</div>
       </section>
 
       <section id="audit" className="container-x section-y grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
@@ -181,9 +181,9 @@ Status              <span className="ok">HEALTHY</span></pre></div>
 
       <div className="hairline" />
 
-      <section id="proof" className="container-x section-y">
+      <section id="proof" className="mx-auto w-full max-w-[1180px] px-6 py-[72px] md:px-8 md:py-[88px]">
         <SectionHeader eyebrow="On-chain proof" title="Proof links stay available without dominating the page." copy="Important contracts and transactions are listed as explorer actions. Full hashes stay visible, but secondary." />
-        <div className="proof-list">{txs.map(([label, kind, value, href], index) => <a className="proof-row reveal" style={{ animationDelay: `${index * 45}ms` }} href={href} target="_blank" key={value}><span><strong>{label}</strong><em>{kind}</em></span><code>{short(value)}</code><b>View</b></a>)}</div>
+        <div className="space-y-3">{txs.map(([label, kind, value, href], index) => <a className="reveal grid items-center gap-3 rounded-[18px] bg-[#0d0f12] p-4 shadow-[0_0_0_1px_rgba(255,255,255,.06)] transition hover:-translate-y-px hover:bg-[#111318] md:grid-cols-[1fr_auto_auto]" style={{ animationDelay: `${index * 45}ms` }} href={href} target="_blank" key={value}><span><strong className="block text-sm font-semibold text-white">{label}</strong><em className="mt-1 block text-xs not-italic uppercase tracking-[.14em] text-[#8a8f98]">{kind}</em></span><code className="font-mono text-sm text-[#a1a7b0]">{short(value)}</code><b className="inline-flex h-8 items-center justify-center rounded-full bg-[#f5f257] px-3 text-xs font-semibold text-[#08090a]">View</b></a>)}</div>
       </section>
 
       <section className="container-x pb-24">
