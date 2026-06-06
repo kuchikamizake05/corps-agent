@@ -2383,3 +2383,32 @@ html:not(.is-scrolled) .nav-row {
   margin-inline: 0 !important;
   border-radius: 0 !important;
 }
+
+/* ─── Animated width fix: no snap to full state ────────────── */
+.nav-row,
+html:not(.is-scrolled) .nav-row {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin-inline: 0 !important;
+  border-radius: 0 !important;
+}
+
+html.is-scrolled .nav-row {
+  width: calc(100vw - 56px) !important;
+  max-width: 1320px !important;
+  margin-inline: auto !important;
+  border-radius: 999px !important;
+}
+
+@media (max-width: 760px) {
+  .nav-row,
+  html:not(.is-scrolled) .nav-row {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+
+  html.is-scrolled .nav-row {
+    width: calc(100vw - 18px) !important;
+    max-width: calc(100vw - 18px) !important;
+  }
+}

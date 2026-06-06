@@ -9,8 +9,8 @@ export default function MouseEffects() {
       const isScrolled = root.classList.contains('is-scrolled')
       const y = window.scrollY
 
-      if (!isScrolled && y > 28) root.classList.add('is-scrolled')
-      if (isScrolled && y < 8) root.classList.remove('is-scrolled')
+      if (!isScrolled && y > 80) root.classList.add('is-scrolled')
+      if (isScrolled && y < 54) root.classList.remove('is-scrolled')
     }
 
     onScroll()
