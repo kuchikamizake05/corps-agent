@@ -2259,3 +2259,51 @@ html.is-scrolled .nav-row::after,
     height: 52px !important;
   }
 }
+
+/* ─── Smoother full → pill navbar morph, longer pill ───────── */
+nav.topnav {
+  transition:
+    height 520ms cubic-bezier(.16,1,.3,1),
+    padding 520ms cubic-bezier(.16,1,.3,1),
+    background 520ms cubic-bezier(.16,1,.3,1) !important;
+}
+
+.nav-row {
+  transform: translateZ(0);
+  will-change: width, max-width, height, border-radius, padding, background, box-shadow;
+  transition:
+    width 560ms cubic-bezier(.16,1,.3,1),
+    max-width 560ms cubic-bezier(.16,1,.3,1),
+    height 520ms cubic-bezier(.16,1,.3,1),
+    margin 560ms cubic-bezier(.16,1,.3,1),
+    padding 520ms cubic-bezier(.16,1,.3,1),
+    border-radius 560ms cubic-bezier(.16,1,.3,1),
+    background 420ms ease,
+    box-shadow 420ms ease !important;
+}
+
+html.is-scrolled .nav-row {
+  width: min(1320px, calc(100vw - 28px)) !important;
+  max-width: min(1320px, calc(100vw - 28px)) !important;
+  height: 58px !important;
+  padding-inline: 20px !important;
+}
+
+html.is-scrolled nav.topnav {
+  height: 78px !important;
+  padding-top: 10px !important;
+}
+
+@media (min-width: 1200px) {
+  html.is-scrolled .nav-row {
+    width: calc(100vw - 56px) !important;
+    max-width: 1320px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  html.is-scrolled .nav-row {
+    width: calc(100vw - 18px) !important;
+    max-width: calc(100vw - 18px) !important;
+  }
+}
