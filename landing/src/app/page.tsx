@@ -1,4 +1,5 @@
 import LiquidEther from './LiquidEther'
+import MouseEffects from './MouseEffects'
 
 const TREASURY = '0xbC46a13BEEDd08592e69ac0EDF20893416A406de'
 const TOKEN = '0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2'
@@ -73,6 +74,7 @@ function SectionHeader({ eyebrow, title, copy }: { eyebrow: string; title: strin
 export default function Home() {
   return (
     <main>
+      <MouseEffects />
       <div className="scroll-progress" aria-hidden="true" />
       <div className="liquid-ether-layer" aria-hidden="true"><LiquidEther /></div>
       <div className="ambient-bg" aria-hidden="true">

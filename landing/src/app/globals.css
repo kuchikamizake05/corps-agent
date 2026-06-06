@@ -1638,3 +1638,53 @@ footer,
     animation: none !important;
   }
 }
+
+/* ─── Liquid sheet + mouse reaction pass ───────────────────── */
+.liquid-ether-layer {
+  background:
+    linear-gradient(115deg, rgba(232,238,58,.10), transparent 22%, rgba(126,138,28,.12) 48%, transparent 72%),
+    radial-gradient(720px 380px at 50% 0%, rgba(232,238,58,.13), transparent 62%) !important;
+}
+
+.liquid-ether-layer::before {
+  inset: -8% !important;
+  background:
+    conic-gradient(from 120deg at var(--mouse-x, 50%) var(--mouse-y, 28%), transparent 0deg, rgba(235,240,54,.24) 52deg, transparent 112deg, rgba(126,145,35,.16) 176deg, transparent 250deg, rgba(202,156,30,.12) 312deg, transparent 360deg),
+    linear-gradient(118deg, transparent 12%, rgba(235,240,54,.14) 29%, transparent 46%, rgba(124,140,35,.12) 62%, transparent 78%);
+  filter: blur(10px) saturate(1.1) !important;
+  opacity: .72;
+  mix-blend-mode: screen;
+  animation: liquid-sheet-drift 14s ease-in-out infinite alternate !important;
+}
+
+main::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(280px circle at var(--mouse-x, 50%) var(--mouse-y, 35%), rgba(235,240,54,.13), rgba(126,145,35,.06) 38%, transparent 68%);
+  mix-blend-mode: screen;
+  opacity: .85;
+  transition: opacity 160ms ease;
+}
+
+.hero-panel::before,
+.card::before,
+.bento-card::after,
+.terminal::before,
+.command-shell::before {
+  background: radial-gradient(300px circle at var(--mouse-x, 50%) var(--mouse-y, 0%), rgba(235,240,54,.105), transparent 46%) !important;
+}
+
+@keyframes liquid-sheet-drift {
+  0% { transform: translate3d(-2%, -1%, 0) rotate(-2deg) scale(1.02); }
+  50% { transform: translate3d(2%, 1%, 0) rotate(2deg) scale(1.05); }
+  100% { transform: translate3d(1%, -2%, 0) rotate(4deg) scale(1.03); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main::before {
+    display: none;
+  }
+}
