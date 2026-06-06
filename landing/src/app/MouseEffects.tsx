@@ -5,7 +5,12 @@ import { useEffect } from 'react'
 export default function MouseEffects() {
   useEffect(() => {
     const onScroll = () => {
-      document.documentElement.classList.toggle('is-scrolled', window.scrollY > 24)
+      const root = document.documentElement
+      const isScrolled = root.classList.contains('is-scrolled')
+      const y = window.scrollY
+
+      if (!isScrolled && y > 28) root.classList.add('is-scrolled')
+      if (isScrolled && y < 8) root.classList.remove('is-scrolled')
     }
 
     onScroll()

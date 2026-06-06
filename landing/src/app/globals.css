@@ -2349,3 +2349,37 @@ html.is-scrolled .nav-row {
   background: #090a0c !important;
   background-image: linear-gradient(180deg, #15171a 0%, #090a0c 72%, #07080a 100%) !important;
 }
+
+/* ─── Smooth reverse morph: pill → full ────────────────────── */
+nav.topnav {
+  transition:
+    height 620ms cubic-bezier(.19,1,.22,1),
+    padding-top 620ms cubic-bezier(.19,1,.22,1),
+    background 520ms ease !important;
+}
+
+.nav-row {
+  transition:
+    width 680ms cubic-bezier(.19,1,.22,1),
+    max-width 680ms cubic-bezier(.19,1,.22,1),
+    height 620ms cubic-bezier(.19,1,.22,1),
+    margin 680ms cubic-bezier(.19,1,.22,1),
+    padding 620ms cubic-bezier(.19,1,.22,1),
+    border-radius 680ms cubic-bezier(.19,1,.22,1),
+    background-color 420ms ease,
+    background-image 420ms ease,
+    box-shadow 520ms ease !important;
+}
+
+html:not(.is-scrolled) nav.topnav {
+  height: 68px !important;
+  padding-top: 0 !important;
+}
+
+html:not(.is-scrolled) .nav-row {
+  width: 100% !important;
+  max-width: none !important;
+  height: 68px !important;
+  margin-inline: 0 !important;
+  border-radius: 0 !important;
+}
