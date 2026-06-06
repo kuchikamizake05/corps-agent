@@ -1688,3 +1688,79 @@ main::before {
     display: none;
   }
 }
+
+/* ─── Scroll morph navbar: full bar → floating pill ───────── */
+nav.topnav {
+  transition: background 220ms ease, border-color 220ms ease, transform 220ms ease, padding 220ms ease;
+}
+
+.nav-row {
+  transition:
+    height 220ms ease,
+    max-width 220ms ease,
+    margin 220ms ease,
+    padding 220ms ease,
+    border-color 220ms ease,
+    border-radius 220ms ease,
+    background 220ms ease,
+    box-shadow 220ms ease,
+    backdrop-filter 220ms ease;
+}
+
+html.is-scrolled nav.topnav {
+  height: 76px;
+  border-bottom-color: transparent;
+  background: linear-gradient(180deg, rgba(8,9,10,.74), rgba(8,9,10,0));
+  padding-top: 10px;
+}
+
+html.is-scrolled .nav-row {
+  height: 52px;
+  max-width: min(1040px, calc(100vw - 40px));
+  margin-inline: auto;
+  padding-inline: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(22,24,28,.86), rgba(10,11,13,.78)),
+    rgba(11,12,14,.72);
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.34),
+    inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+}
+
+html.is-scrolled .nav-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+html.is-scrolled .nav-brand-copy span:last-child {
+  display: none;
+}
+
+html.is-scrolled .nav-center {
+  gap: 18px;
+}
+
+html.is-scrolled .nav-link {
+  padding: 6px 0;
+}
+
+html.is-scrolled .nav-cta {
+  height: 30px;
+  border-radius: 999px;
+}
+
+@media (max-width: 760px) {
+  html.is-scrolled nav.topnav {
+    height: 68px;
+    padding-top: 8px;
+  }
+  html.is-scrolled .nav-row {
+    max-width: calc(100vw - 24px);
+    height: 48px;
+  }
+}

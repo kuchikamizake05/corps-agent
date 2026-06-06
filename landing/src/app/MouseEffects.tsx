@@ -22,10 +22,17 @@ export default function MouseEffects() {
       if (!raf) raf = requestAnimationFrame(apply)
     }
 
+    const onScroll = () => {
+      document.documentElement.classList.toggle('is-scrolled', window.scrollY > 24)
+    }
+
     apply()
+    onScroll()
     window.addEventListener('pointermove', onMove, { passive: true })
+    window.addEventListener('scroll', onScroll, { passive: true })
     return () => {
       window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('scroll', onScroll)
       if (raf) cancelAnimationFrame(raf)
     }
   }, [])
