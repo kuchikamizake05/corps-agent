@@ -1448,3 +1448,43 @@ nav.topnav,
     display: none;
   }
 }
+
+/* ─── Dark Veil visibility fix ─────────────────────────────── */
+main {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+}
+
+.dark-veil-layer {
+  z-index: 0 !important;
+  opacity: .88 !important;
+  filter: saturate(.82) contrast(1.04) brightness(.92) !important;
+}
+
+.ambient-bg {
+  z-index: 1 !important;
+}
+
+nav.topnav,
+section,
+footer,
+.hairline {
+  position: relative;
+  z-index: 2;
+}
+
+.dark-veil-layer::after {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(8,9,10,.05), rgba(8,9,10,.38) 58%, rgba(8,9,10,.80) 100%),
+    linear-gradient(180deg, rgba(8,9,10,.12), rgba(8,9,10,.55)) !important;
+}
+
+.bg-grid {
+  opacity: .18 !important;
+}
+
+.beam,
+.orbit {
+  opacity: .16 !important;
+}
