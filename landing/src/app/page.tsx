@@ -63,10 +63,10 @@ function short(addr: string) {
 
 function SectionHeader({ eyebrow, title, copy }: { eyebrow: string; title: string; copy: string }) {
   return (
-    <div className="section-head">
-      <p className="eyebrow mb-3">{eyebrow}</p>
-      <h2 className="h2">{title}</h2>
-      <p className="body mt-4 max-w-xl">{copy}</p>
+    <div className="mb-9 max-w-2xl">
+      <p className="mb-3 text-[11px] font-semibold uppercase tracking-[.18em] text-[#f5f257]">{eyebrow}</p>
+      <h2 className="text-[clamp(2rem,4vw,3.5rem)] font-semibold leading-[.98] tracking-[-.06em] text-white">{title}</h2>
+      <p className="mt-4 max-w-xl text-sm leading-7 text-[#a1a7b0] md:text-base">{copy}</p>
     </div>
   )
 }
@@ -186,11 +186,11 @@ Status              <span className="ok">HEALTHY</span></pre></div>
         <div className="space-y-3">{txs.map(([label, kind, value, href], index) => <a className="reveal grid items-center gap-3 rounded-[18px] bg-[#0d0f12] p-4 shadow-[0_0_0_1px_rgba(255,255,255,.06)] transition hover:-translate-y-px hover:bg-[#111318] md:grid-cols-[1fr_auto_auto]" style={{ animationDelay: `${index * 45}ms` }} href={href} target="_blank" key={value}><span><strong className="block text-sm font-semibold text-white">{label}</strong><em className="mt-1 block text-xs not-italic uppercase tracking-[.14em] text-[#8a8f98]">{kind}</em></span><code className="font-mono text-sm text-[#a1a7b0]">{short(value)}</code><b className="inline-flex h-8 items-center justify-center rounded-full bg-[#f5f257] px-3 text-xs font-semibold text-[#08090a]">View</b></a>)}</div>
       </section>
 
-      <section className="container-x pb-24">
-        <div className="card cta-motion p-8 md:p-10"><p className="eyebrow mb-3">Submission-ready</p><h2 className="h2 max-w-2xl">A working prototype for stablecoin-native community treasury operations.</h2><p className="body mt-4 max-w-2xl">Built for Celo Onchain Agents: low-cost stablecoin flows, agent identity, payout accountability, and readable proof links in one repo.</p><div className="mt-7 flex flex-wrap gap-3"><a className="btn btn-primary" href="https://t.me/CorpsAgentBot" target="_blank">Open bot</a><a className="btn btn-ghost" href="https://github.com/kuchikamizake05/corps-agent" target="_blank">Source code</a></div></div>
+      <section className="mx-auto w-full max-w-[1180px] px-6 pb-24 md:px-8">
+        <div className="rounded-[28px] bg-[#0d0f12] p-8 shadow-[0_0_0_1px_rgba(255,255,255,.06),0_28px_90px_rgba(0,0,0,.42),inset_0_1px_0_rgba(255,255,255,.03)] md:p-10"><p className="mb-3 text-[11px] font-semibold uppercase tracking-[.18em] text-[#f5f257]">Submission-ready</p><h2 className="max-w-2xl text-[clamp(2rem,4vw,3.5rem)] font-semibold leading-[.98] tracking-[-.06em] text-white">A working prototype for stablecoin-native community treasury operations.</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-[#a1a7b0] md:text-base">Built for Celo Onchain Agents: low-cost stablecoin flows, agent identity, payout accountability, and readable proof links in one repo.</p><div className="mt-7 flex flex-wrap gap-3"><a className="inline-flex h-10 items-center justify-center rounded-full bg-[#f5f257] px-5 text-sm font-semibold text-[#08090a] shadow-[0_14px_34px_rgba(245,242,87,.18)] transition hover:-translate-y-px hover:bg-[#ffff75]" href="https://t.me/CorpsAgentBot" target="_blank">Open bot</a><a className="inline-flex h-10 items-center justify-center rounded-full bg-[#15171a] px-5 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)] transition hover:-translate-y-px hover:bg-[#1b1e23]" href="https://github.com/kuchikamizake05/corps-agent" target="_blank">Source code</a></div></div>
       </section>
 
-      <footer className="border-t border-white/[0.06] py-8"><div className="container-x flex flex-col gap-3 text-xs text-[#62666d] md:flex-row md:items-center md:justify-between"><p>Corps Agent · Celo Onchain Agents Hackathon</p><p className="font-mono">Solidity / Python / Hermes / Next.js</p></div></footer>
+      <footer className="border-t border-white/[0.06] py-8"><div className="mx-auto flex w-full max-w-[1180px] flex-col gap-3 px-6 text-xs text-[#62666d] md:flex-row md:items-center md:justify-between md:px-8"><p>Corps Agent · Celo Onchain Agents Hackathon</p><p className="font-mono">Solidity / Python / Hermes / Next.js</p></div></footer>
     </main>
   )
 }
