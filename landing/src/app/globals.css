@@ -2412,3 +2412,52 @@ html.is-scrolled .nav-row {
     max-width: calc(100vw - 18px) !important;
   }
 }
+
+/* ─── Framer Motion navbar source of truth ─────────────────── */
+.motion-nav {
+  position: fixed !important;
+  inset: 0 0 auto 0 !important;
+  z-index: 1000 !important;
+  background: #090a0c !important;
+  background-image: linear-gradient(180deg, #15171a 0%, #090a0c 72%, #07080a 100%) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.motion-nav[data-scrolled='true'] {
+  background: transparent !important;
+  background-image: none !important;
+  pointer-events: none;
+}
+
+.motion-nav-row {
+  pointer-events: auto;
+  margin-inline: auto !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  transform: translateZ(0);
+}
+
+.motion-nav[data-scrolled='true'] .motion-nav-row {
+  background: #090a0c !important;
+  background-image: linear-gradient(180deg, #15171a 0%, #090a0c 72%, #07080a 100%) !important;
+  box-shadow:
+    0 18px 58px rgba(0,0,0,.50),
+    0 0 0 1px rgba(252,255,82,.045),
+    inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
+
+.motion-nav-row::before,
+.motion-nav-row::after {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .motion-nav[data-scrolled='true'] .motion-nav-row {
+    width: calc(100vw - 18px) !important;
+  }
+}

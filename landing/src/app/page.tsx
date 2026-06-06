@@ -1,5 +1,5 @@
 import LiquidEther from './LiquidEther'
-import MouseEffects from './MouseEffects'
+import Navbar from './Navbar'
 
 const TREASURY = '0xbC46a13BEEDd08592e69ac0EDF20893416A406de'
 const TOKEN = '0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2'
@@ -74,7 +74,6 @@ function SectionHeader({ eyebrow, title, copy }: { eyebrow: string; title: strin
 export default function Home() {
   return (
     <main>
-      <MouseEffects />
       <div className="scroll-progress" aria-hidden="true" />
       <div className="liquid-ether-layer" aria-hidden="true"><LiquidEther /></div>
       <div className="ambient-bg" aria-hidden="true">
@@ -87,21 +86,7 @@ export default function Home() {
         <div className="beam beam-b" />
       </div>
 
-      <nav className="topnav">
-        <div className="container-x nav-row">
-          <a href="#top" className="nav-brand" aria-label="Corps Agent home">
-            <span className="nav-logo">CA</span>
-            <span className="nav-brand-copy"><span>Corps Agent</span><span>Autonomous treasury ops</span></span>
-          </a>
-          <div className="nav-center" aria-label="Primary navigation">
-            <a className="nav-link" href="#agents">Agents</a>
-            <a className="nav-link" href="#audit">Audit</a>
-            <a className="nav-link" href="#proof">Proof</a>
-            <a className="nav-link" href="https://github.com/kuchikamizake05/corps-agent" target="_blank">GitHub</a>
-          </div>
-          <div className="nav-actions"><a className="nav-cta" href="https://t.me/CorpsAgentBot" target="_blank">Open bot</a></div>
-        </div>
-      </nav>
+      <Navbar />
 
       <section id="top" className="container-x section-hero">
         <div className="hero-grid">
