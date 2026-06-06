@@ -40,8 +40,9 @@ print(f"Fee owed:  {fee / 1e18:.6f} tUSDC")
 print(f"")
 
 # Record profit if available
-if vault_bal > assets:
-    diff = vault_bal - assets
+accounted = assets + fee
+if vault_bal > accounted:
+    diff = vault_bal - accounted
     print(f"📈 Unrecorded profit: {diff / 1e18:.6f} tUSDC")
     r = cast("send", TREASURY, "recordProfit()", "--private-key", CEO_PK, "--rpc-url", RPC, "--gas-limit", "100000")
     if r.returncode == 0:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Auditor Agent — read-only treasury consistency and risk report."""
+"""Auditor module — read-only treasury consistency, risk score, and report."""
 import os
 import subprocess
 from pathlib import Path
@@ -14,6 +14,10 @@ RPC = os.environ.get("CELO_SEPOLIA_RPC", "https://forno.celo-sepolia.celo-testne
 TREASURY = os.environ["TREASURY_ADDRESS"]
 TOKEN = os.environ["TOKEN"]
 CEO = os.environ.get("CEO_ADDRESS", "")
+DEVOPS = os.environ.get("DEVOPS_ADDRESS", "")
+
+WAD = 10**18
+DUST = 10**14  # 0.0001 token
 
 
 def cast(*args: str) -> subprocess.CompletedProcess:
@@ -28,7 +32,12 @@ def uint(*args: str) -> int:
 
 
 def ether(n: int) -> str:
-    return f"{n / 1e18:.6f}"
+    sign = "-" if n < 0 else ""
+    return f"{sign}{abs(n) / WAD:.6f}"
+
+
+def verdict(ok: bool) -> str:
+    return "PASS" if ok else "FAIL"
 
 
 def main() -> None:
@@ -38,49 +47,73 @@ def main() -> None:
     price = uint("call", TREASURY, "sharePrice()(uint256)", "--rpc-url", RPC)
     vault = uint("call", TREASURY, "vaultBalance()(uint256)", "--rpc-url", RPC)
     ceo_shares = uint("call", TREASURY, "shares(address)(uint256)", CEO, "--rpc-url", RPC) if CEO else 0
+    devops_bal = uint("call", TOKEN, "balanceOf(address)(uint256)", DEVOPS, "--rpc-url", RPC) if DEVOPS else 0
 
     accounted = assets + fee
     mismatch = vault - accounted
 
-    flags = []
-    if mismatch < 0:
-        flags.append(f"❌ Vault underfunded by {ether(abs(mismatch))} tUSDC")
-    elif mismatch > 10**14:  # >0.0001 token unrecorded profit/dust
-        flags.append(f"⚠️ Unrecorded token balance: {ether(mismatch)} tUSDC")
+    checks = []
+    checks.append(("Balance check", abs(mismatch) <= DUST, "vault == totalAssets + pendingOwnerFee"))
+    checks.append(("Accounting check", assets >= 0 and vault >= fee, "tracked assets and fee liability are solvent"))
+    checks.append(("Share supply check", not (shares == 0 and assets > 0), "assets should have matching shares"))
+    checks.append(("Share price check", price > 0 if shares > 0 else assets == 0, "share price must stay valid"))
+    checks.append(("Fee liability check", fee <= max(assets // 10, DUST), "pending fee should not dominate assets"))
+    checks.append(("Payout impact check", devops_bal >= WAD, "demo vendor/devops payout is visible"))
+
+    failures = [name for name, ok, _ in checks if not ok]
+    warnings = []
+    notes = []
+    if mismatch > DUST:
+        warnings.append(f"Unrecorded token balance: {ether(mismatch)} tUSDC")
+    if assets and price < int(0.95 * WAD):
+        notes.append("Share price below 0.95 tUSDC after payout; expected when treasury funds are spent")
+    if not failures and not warnings:
+        risk = "LOW"
+        status = "HEALTHY"
+    elif not failures:
+        risk = "MEDIUM"
+        status = "HEALTHY_WITH_NOTES"
     else:
-        flags.append("✅ Vault balance matches accounted assets + fees")
+        risk = "HIGH"
+        status = "CHECK_REQUIRED"
 
-    if shares == 0 and assets > 0:
-        flags.append("⚠️ Assets exist but no shares are minted")
-    elif shares > 0:
-        flags.append("✅ Active vault shares exist")
-
-    if price == 0:
-        flags.append("❌ Share price is zero")
-    else:
-        flags.append("✅ Share price is valid")
-
-    if fee > assets // 10 if assets else fee > 0:
-        flags.append("⚠️ Pending owner fee is high relative to assets")
-    else:
-        flags.append("✅ Pending owner fee within normal range")
-
-    status = "HEALTHY" if not any(f.startswith("❌") for f in flags) else "CHECK_REQUIRED"
-
-    print("=== Auditor Report (Agent #Auditor) ===")
+    print("=== Treasury Audit Report ===")
+    print("Module: Auditor")
     print(f"Treasury: {TREASURY}")
     print(f"Token:    {TOKEN}")
-    print(f"Assets:   {ether(assets)} tUSDC")
-    print(f"Shares:   {ether(shares)}")
-    print(f"CEO shares: {ether(ceo_shares)}")
-    print(f"Price:    {ether(price)} tUSDC")
-    print(f"Vault:    {ether(vault)} tUSDC")
-    print(f"Fee:      {ether(fee)} tUSDC")
-    print(f"Mismatch: {ether(mismatch)} tUSDC")
-    print("\nRisk flags:")
-    for flag in flags:
-        print(f"- {flag}")
-    print(f"\nStatus: {status}")
+    print("")
+    print("Snapshot")
+    print(f"- Total assets:      {ether(assets)} tUSDC")
+    print(f"- Total shares:      {ether(shares)}")
+    print(f"- CEO shares:        {ether(ceo_shares)}")
+    print(f"- Share price:       {ether(price)} tUSDC")
+    print(f"- Vault balance:     {ether(vault)} tUSDC")
+    print(f"- Pending owner fee: {ether(fee)} tUSDC")
+    print(f"- Accounting gap:    {ether(mismatch)} tUSDC")
+    print(f"- DevOps/vendor bal: {ether(devops_bal)} tUSDC")
+    print("")
+    print("Checks")
+    for name, ok, detail in checks:
+        print(f"- {name}: {verdict(ok)} — {detail}")
+    if warnings:
+        print("")
+        print("Warnings")
+        for warning in warnings:
+            print(f"- {warning}")
+    if notes:
+        print("")
+        print("Notes")
+        for note in notes:
+            print(f"- {note}")
+    print("")
+    print(f"Risk level: {risk}")
+    print(f"Status: {status}")
+    if failures:
+        print(f"Recommendation: investigate {', '.join(failures)}")
+    elif warnings:
+        print("Recommendation: treasury usable; review notes before large payouts")
+    else:
+        print("Recommendation: treasury healthy for community operations")
 
 
 if __name__ == "__main__":

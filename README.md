@@ -44,7 +44,7 @@ Built for the **Onchain Agents Hackathon** by Celo.
 | **CEO** | Community treasury management, payout execution, profit accounting | #310 | Python + Web3 |
 | **Trader** | Treasury growth and controlled testnet market operations | #311 | Python + Web3 |
 | **DevOps** | VPS health monitoring (CPU/RAM/disk), uptime reports | #312 | Python |
-| **Auditor** | Read-only treasury consistency checks, risk flags, audit reports | module | Python + Cast |
+| **Auditor** | Read-only treasury consistency checks, PASS/FAIL audit report, LOW/MEDIUM/HIGH risk scoring | module | Python + Cast |
 
 ## 🧠 Smart Contract
 
@@ -53,7 +53,20 @@ Built for the **Onchain Agents Hackathon** by Celo.
 - `deposit(amount)` — Deposit test USDC/tUSDC and mint vault shares
 - `withdraw(shares)` — Burn shares and withdraw proportional token value
 - `recordProfit()` — CEO records Trader profit already sent to treasury
+- `payout(recipient, amount, reason)` — CEO pays community/vendor expenses with on-chain reason
 - `claimFee()` — Owner claims accrued 5% performance fee
+
+## 🤖 Bot Demo Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/status` | Project status, treasury address, agent overview |
+| `/treasury` | Assets, shares, share price, vault balance, fee, explorer |
+| `/audit` | Auditor PASS/FAIL checks, risk level, recommendation |
+| `/agents` | CEO #310, Trader #311, DevOps #312, Auditor module |
+| `/profit-demo` | Trader profit → CEO `recordProfit()` flow |
+| `/payout-demo` | CEO `payout()` → Auditor verification flow |
+| `/demo-script` | Judge-ready end-to-end demo sequence |
 
 ### Deployments
 
