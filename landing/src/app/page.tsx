@@ -62,25 +62,32 @@ export default function Home() {
         <div className="orbit orbit-b" />
       </div>
       <nav className="topnav">
-        <div className="container-x flex h-16 items-center justify-between">
-          <a href="#top" className="link flex items-center gap-3" aria-label="Corps Agent home">
-            <span className="brand-mark flex h-8 w-8 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] font-mono text-xs text-white">CA</span>
-            <span>
-              <span className="block text-sm font-medium text-white">Corps Agent</span>
-              <span className="block font-mono text-[11px] text-[#62666d]">celo / treasury ops</span>
-            </span>
-          </a>
+        <div className="container-x py-3">
+          <div className="nav-shell">
+            <a href="#top" className="nav-brand" aria-label="Corps Agent home">
+              <span className="brand-mark nav-logo">CA</span>
+              <span className="nav-brand-copy">
+                <span>Corps Agent</span>
+                <span>celo / treasury ops</span>
+              </span>
+            </a>
 
-          <div className="hidden items-center gap-7 text-[13px] md:flex">
-            <a className="link" href="#agents">Agents</a>
-            <a className="link" href="#audit">Audit</a>
-            <a className="link" href="#proof">Proof</a>
-            <a className="link" href="https://github.com/kuchikamizake05/corps-agent" target="_blank">GitHub</a>
+            <div className="nav-center" aria-label="Primary navigation">
+              <a className="nav-link" href="#agents"><span>Agents</span></a>
+              <a className="nav-link" href="#audit"><span>Audit</span></a>
+              <a className="nav-link" href="#proof"><span>Proof</span></a>
+              <a className="nav-link" href="https://github.com/kuchikamizake05/corps-agent" target="_blank"><span>GitHub</span></a>
+            </div>
+
+            <div className="nav-actions">
+              <a className="nav-status" href={`https://sepolia.celoscan.io/address/${TREASURY}`} target="_blank">
+                <span className="dot" />
+                <span>live</span>
+                <span className="nav-status-chain">Celo</span>
+              </a>
+              <a className="nav-cta" href="https://t.me/CorpsAgentBot" target="_blank">Open bot</a>
+            </div>
           </div>
-
-          <a className="pill" href={`https://sepolia.celoscan.io/address/${TREASURY}`} target="_blank">
-            <span className="dot" /> live on Celo
-          </a>
         </div>
       </nav>
 
