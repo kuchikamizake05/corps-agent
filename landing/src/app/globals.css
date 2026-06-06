@@ -1818,3 +1818,104 @@ main::before {
 .command-shell::before {
   background: radial-gradient(280px circle at 50% 0%, rgba(235,240,54,.075), transparent 46%) !important;
 }
+
+/* ─── Navbar polish: bigger, blurrier, smoother pill ──────── */
+nav.topnav {
+  height: 68px !important;
+  background: rgba(8,9,10,.88) !important;
+  border-bottom: 1px solid rgba(255,255,255,.055) !important;
+  backdrop-filter: blur(14px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(145%) !important;
+  transition:
+    height 420ms cubic-bezier(.22,1,.36,1),
+    padding 420ms cubic-bezier(.22,1,.36,1),
+    background 420ms cubic-bezier(.22,1,.36,1),
+    border-color 420ms cubic-bezier(.22,1,.36,1) !important;
+}
+
+.nav-row {
+  height: 68px !important;
+  transition:
+    height 420ms cubic-bezier(.22,1,.36,1),
+    max-width 420ms cubic-bezier(.22,1,.36,1),
+    padding 420ms cubic-bezier(.22,1,.36,1),
+    border-radius 420ms cubic-bezier(.22,1,.36,1),
+    border-color 420ms cubic-bezier(.22,1,.36,1),
+    background 420ms cubic-bezier(.22,1,.36,1),
+    box-shadow 420ms cubic-bezier(.22,1,.36,1),
+    backdrop-filter 420ms cubic-bezier(.22,1,.36,1),
+    transform 420ms cubic-bezier(.22,1,.36,1) !important;
+}
+
+html.is-scrolled nav.topnav {
+  height: 84px !important;
+  padding-top: 12px !important;
+  background: linear-gradient(180deg, rgba(8,9,10,.86), rgba(8,9,10,.24) 70%, transparent) !important;
+  border-bottom-color: transparent !important;
+}
+
+html.is-scrolled .nav-row {
+  height: 58px !important;
+  max-width: min(1120px, calc(100vw - 48px)) !important;
+  padding-inline: 18px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,.072) !important;
+  background:
+    linear-gradient(180deg, rgba(18,20,23,.94), rgba(9,10,12,.90)),
+    rgba(10,11,13,.92) !important;
+  box-shadow:
+    0 18px 56px rgba(0,0,0,.42),
+    0 0 0 1px rgba(235,240,54,.025),
+    inset 0 1px 0 rgba(255,255,255,.055) !important;
+  backdrop-filter: blur(26px) saturate(155%) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(155%) !important;
+}
+
+html.is-scrolled .nav-logo {
+  width: 31px !important;
+  height: 31px !important;
+}
+
+html.is-scrolled .nav-brand-copy span:first-child {
+  font-size: 13.5px !important;
+}
+
+html.is-scrolled .nav-link,
+html.is-scrolled .nav-cta {
+  font-size: 13px !important;
+}
+
+html.is-scrolled .nav-cta {
+  height: 33px !important;
+  padding-inline: 14px !important;
+}
+
+.section-hero {
+  padding-top: 96px !important;
+}
+
+@media (max-height: 780px) and (min-width: 900px) {
+  .section-hero {
+    padding-top: 86px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  nav.topnav {
+    height: 62px !important;
+  }
+  .nav-row {
+    height: 62px !important;
+  }
+  html.is-scrolled nav.topnav {
+    height: 74px !important;
+    padding-top: 9px !important;
+  }
+  html.is-scrolled .nav-row {
+    height: 54px !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+  .section-hero {
+    padding-top: 82px !important;
+  }
+}
