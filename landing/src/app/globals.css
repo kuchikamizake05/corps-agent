@@ -983,3 +983,179 @@ a.link-card,
     gap: 8px;
   }
 }
+
+/* ─── Scroll + background effects: ReactBits/MagicUI-inspired, sober ─── */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 80;
+  width: 100%;
+  height: 2px;
+  transform-origin: 0 50%;
+  scale: 0 1;
+  background: linear-gradient(90deg, transparent, var(--accent), rgba(255,255,255,.88));
+  animation: scroll-progress linear;
+  animation-timeline: scroll(root);
+}
+
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(252,255,82,.055), transparent 24%),
+    radial-gradient(circle at 78% 18%, rgba(86,159,255,.045), transparent 26%),
+    linear-gradient(180deg, #08090a 0%, #0b0c0e 52%, #08090a 100%);
+}
+
+.bg-grid {
+  position: absolute;
+  inset: -2px;
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at 50% 12%, black 0%, rgba(0,0,0,.78) 35%, transparent 78%);
+  opacity: .55;
+  transform: translateZ(0);
+  animation: grid-drift 28s linear infinite;
+}
+
+.bg-grid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(252,255,82,.10), transparent 34%);
+  opacity: .5;
+}
+
+.bg-noise {
+  position: absolute;
+  inset: 0;
+  opacity: .045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+  mix-blend-mode: screen;
+}
+
+.beam {
+  position: absolute;
+  width: 52vw;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(252,255,82,.18), transparent);
+  filter: blur(.3px);
+  opacity: .7;
+}
+.beam-a {
+  top: 22%;
+  left: -12%;
+  rotate: -16deg;
+  animation: beam-slide-a 16s ease-in-out infinite;
+}
+.beam-b {
+  top: 64%;
+  right: -18%;
+  rotate: 14deg;
+  animation: beam-slide-b 20s ease-in-out infinite;
+}
+
+.section-y,
+.section-hero {
+  view-timeline-name: --section;
+  view-timeline-axis: block;
+}
+
+.section-y > *,
+.section-hero > * {
+  animation: section-rise both ease-out;
+  animation-timeline: view();
+  animation-range: entry 6% cover 22%;
+}
+
+.card,
+.hero-panel,
+.bento-card,
+.terminal,
+.proof-row,
+.command-shell {
+  position: relative;
+}
+
+.card::before,
+.hero-panel::before,
+.bento-card::after,
+.terminal::before,
+.command-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 0%), rgba(252,255,82,.075), transparent 42%);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.card:hover::before,
+.hero-panel:hover::before,
+.bento-card:hover::after,
+.terminal:hover::before,
+.command-shell:hover::before {
+  opacity: 1;
+}
+
+.hero-panel,
+.bento-card,
+.terminal,
+.command-shell {
+  transform-style: preserve-3d;
+}
+
+@supports (animation-timeline: scroll()) {
+  @keyframes scroll-progress { to { scale: 1 1; } }
+}
+
+@keyframes grid-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(56px, 56px, 0); }
+}
+
+@keyframes beam-slide-a {
+  0%, 100% { translate: -6vw 0; opacity: .28; }
+  50% { translate: 14vw 5vh; opacity: .75; }
+}
+
+@keyframes beam-slide-b {
+  0%, 100% { translate: 8vw 0; opacity: .18; }
+  50% { translate: -16vw -4vh; opacity: .55; }
+}
+
+@keyframes section-rise {
+  from {
+    opacity: .35;
+    transform: translateY(22px) scale(.992);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-progress,
+  .bg-grid,
+  .beam,
+  .section-y > *,
+  .section-hero > * {
+    animation: none !important;
+  }
+  .scroll-progress { scale: 1 1; }
+}
+
+@media (max-width: 640px) {
+  .bg-grid { background-size: 42px 42px; opacity: .38; }
+  .beam { display: none; }
+}

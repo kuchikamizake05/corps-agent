@@ -71,10 +71,15 @@ function SectionHeader({ eyebrow, title, copy }: { eyebrow: string; title: strin
 export default function Home() {
   return (
     <main>
+      <div className="scroll-progress" aria-hidden="true" />
       <div className="ambient-bg" aria-hidden="true">
+        <div className="bg-grid" />
+        <div className="bg-noise" />
         <div className="scanline" />
         <div className="orbit orbit-a" />
         <div className="orbit orbit-b" />
+        <div className="beam beam-a" />
+        <div className="beam beam-b" />
       </div>
 
       <nav className="topnav">
