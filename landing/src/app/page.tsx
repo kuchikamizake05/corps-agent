@@ -32,6 +32,13 @@ const txs = [
 
 const commands = ['/status', '/treasury', '/audit', '/agents', '/profit-demo', '/payout-demo', '/demo-script']
 
+const stack = [
+  ['Identity', 'ERC-8004 agent IDs', '310 / 311 / 312'],
+  ['Treasury', 'Celo Sepolia vault', 'tUSDC accounting'],
+  ['Runtime', 'Hermes cron + Telegram', '24/7 ops surface'],
+  ['Governance', 'Read-only auditor', 'PASS / LOW risk'],
+]
+
 function short(addr: string) {
   return `${addr.slice(0, 10)}…${addr.slice(-8)}`
 }
@@ -97,6 +104,32 @@ export default function Home() {
               <p className="metric-label">{label}</p>
               <p className="metric mt-4">{value}</p>
               <p className="label mt-2">{unit}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="bento mt-8">
+          <div className="bento-card bento-large reveal [animation-delay:520ms]">
+            <div className="map-head"><span className="dot" /> operational graph</div>
+            <div className="agent-graph" aria-label="Corps Agent operating graph">
+              <div className="node node-core">Treasury<br /><span>{short(TREASURY)}</span></div>
+              <div className="node node-ceo">CEO<br /><span>#310</span></div>
+              <div className="node node-trader">Trader<br /><span>#311</span></div>
+              <div className="node node-devops">DevOps<br /><span>#312</span></div>
+              <div className="node node-audit">Auditor<br /><span>read-only</span></div>
+              <svg className="graph-lines" viewBox="0 0 640 360" aria-hidden="true">
+                <path d="M320 180 C240 110 190 90 145 85" />
+                <path d="M320 180 C420 100 490 82 545 88" />
+                <path d="M320 180 C210 230 170 285 120 300" />
+                <path d="M320 180 C430 235 490 270 552 302" />
+              </svg>
+            </div>
+          </div>
+          {stack.map(([label, title, copy], index) => (
+            <div className="bento-card hover-lift reveal" style={{ animationDelay: `${620 + index * 70}ms` }} key={label}>
+              <p className="metric-label">{label}</p>
+              <h3 className="h3 mt-4">{title}</h3>
+              <p className="body mt-2">{copy}</p>
             </div>
           ))}
         </div>
@@ -196,12 +229,17 @@ Recommendation      treasury healthy for community operations</pre>
           title="A command surface for live demos."
           copy="Telegram bot exposes a small command set for status, treasury, agents, audit, and scripted profit/payout demos."
         />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {commands.map((cmd, index) => (
-            <div className="card command-card reveal flex h-14 items-center px-4 font-mono text-sm text-[#d0d6e0]" style={{ animationDelay: `${index * 45}ms` }} key={cmd}>
-              <span className="mr-3 text-[#62666d]">›</span>{cmd}
-            </div>
-          ))}
+        <div className="command-shell reveal">
+          <div className="command-marquee" aria-hidden="true">
+            {[...commands, ...commands].map((cmd, index) => <span key={`${cmd}-${index}`}>{cmd}</span>)}
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {commands.map((cmd, index) => (
+              <div className="card command-card flex h-14 items-center px-4 font-mono text-sm text-[#d0d6e0]" style={{ animationDelay: `${index * 45}ms` }} key={cmd}>
+                <span className="mr-3 text-[#62666d]">›</span>{cmd}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

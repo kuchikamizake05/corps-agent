@@ -529,3 +529,187 @@ a.link-card,
     transform: none;
   }
 }
+
+/* ─── ReactBits/MagicUI-inspired product effects, dependency-free ─── */
+
+.bento {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.bento-card {
+  position: relative;
+  min-height: 154px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.018)),
+    rgba(255,255,255,.02);
+  overflow: hidden;
+}
+
+.bento-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(252,255,82,.11), transparent 38%);
+  opacity: .85;
+  pointer-events: none;
+}
+
+.bento-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.bento-large {
+  grid-column: span 2;
+  grid-row: span 2;
+  min-height: 322px;
+}
+
+.map-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  color: var(--text-2);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.agent-graph {
+  position: relative;
+  height: 260px;
+  margin-top: 18px;
+  border-radius: 10px;
+  background:
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+  overflow: hidden;
+}
+
+.graph-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.graph-lines path {
+  fill: none;
+  stroke: rgba(252,255,82,.42);
+  stroke-width: 1.3;
+  stroke-dasharray: 7 8;
+  animation: dash-flow 9s linear infinite;
+}
+
+.node {
+  position: absolute;
+  z-index: 2;
+  min-width: 92px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 10px;
+  background: rgba(8,9,10,.82);
+  box-shadow: 0 10px 40px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.03);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.node span {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-4);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 400;
+}
+
+.node-core {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-color: rgba(252,255,82,.45);
+  box-shadow: 0 0 0 1px rgba(252,255,82,.08), 0 0 60px rgba(252,255,82,.08);
+}
+.node-ceo { left: 7%; top: 10%; animation: node-float 5s ease-in-out infinite; }
+.node-trader { right: 6%; top: 12%; animation: node-float 5.5s ease-in-out infinite reverse; }
+.node-devops { left: 4%; bottom: 10%; animation: node-float 6s ease-in-out infinite; }
+.node-audit { right: 4%; bottom: 9%; animation: node-float 6.5s ease-in-out infinite reverse; }
+
+.command-shell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255,255,255,.018);
+  padding: 14px;
+}
+
+.command-marquee {
+  display: flex;
+  width: max-content;
+  gap: 10px;
+  margin-bottom: 14px;
+  animation: marquee 28s linear infinite;
+}
+
+.command-marquee span {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-4);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  background: rgba(255,255,255,.025);
+}
+
+.command-card {
+  position: relative;
+  overflow: hidden;
+}
+.command-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -30%;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(252,255,82,.10), transparent);
+  transform: skewX(-18deg);
+  transition: left 450ms ease;
+}
+.command-card:hover::after {
+  left: 110%;
+}
+
+@media (max-width: 900px) {
+  .bento { grid-template-columns: 1fr; }
+  .bento-large { grid-column: span 1; }
+}
+
+@keyframes dash-flow {
+  to { stroke-dashoffset: -120; }
+}
+
+@keyframes node-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -7px; }
+}
+
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
