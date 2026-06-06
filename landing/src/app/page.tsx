@@ -79,7 +79,6 @@ export default function Home() {
           </div>
 
           <div className="nav-actions">
-            <a className="nav-secondary" href={`https://sepolia.celoscan.io/address/${TREASURY}`} target="_blank">Contract</a>
             <a className="nav-cta" href="https://t.me/CorpsAgentBot" target="_blank">Open bot</a>
           </div>
         </div>
