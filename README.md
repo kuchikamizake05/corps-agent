@@ -6,7 +6,7 @@ Built for the **Onchain Agents Hackathon** by Celo.
 
 - Landing page: https://corps-agent-site.vercel.app
 - Telegram bot: https://t.me/CorpsAgentBot
-- Treasury: `0x326C57634866D065AA1ACC20592898F93725Ee5f`
+- Treasury: `0xbC46a13BEEDd08592e69ac0EDF20893416A406de`
 - Test token: `0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2`
 
 ---
@@ -41,9 +41,10 @@ Built for the **Onchain Agents Hackathon** by Celo.
 
 | Agent | Role | ERC-8004 ID | Stack |
 |-------|------|-------------|-------|
-| **CEO** | Treasury management, fund allocation, strategic decisions | #310 | Python + Web3 |
-| **Trader** | DEX price scanning, arbitrage opportunities | #311 | Python + Web3 |
-| **DevOps** | VPS health monitoring (CPU/RAM/disk), budget requests | #312 | Python |
+| **CEO** | Community treasury management, payout execution, profit accounting | #310 | Python + Web3 |
+| **Trader** | Treasury growth and controlled testnet market operations | #311 | Python + Web3 |
+| **DevOps** | VPS health monitoring (CPU/RAM/disk), uptime reports | #312 | Python |
+| **Auditor** | Read-only treasury consistency checks, risk flags, audit reports | module | Python + Cast |
 
 ## 🧠 Smart Contract
 
@@ -58,7 +59,7 @@ Built for the **Onchain Agents Hackathon** by Celo.
 
 | Network | Address | Explorer |
 |---------|---------|---------|
-| Celo Sepolia | `0x326C57634866D065AA1ACC20592898F93725Ee5f` | [View](https://sepolia.celoscan.io/address/0x326C57634866D065AA1ACC20592898F93725Ee5f) |
+| Celo Sepolia | `0xbC46a13BEEDd08592e69ac0EDF20893416A406de` | [View](https://sepolia.celoscan.io/address/0xbC46a13BEEDd08592e69ac0EDF20893416A406de) |
 
 ## ⏰ Cron Schedule
 
@@ -111,7 +112,8 @@ forge script script/Deploy.s.sol:DeployTreasury \
 ├── agents/
 │   ├── ceo.py                # CEO agent logic
 │   ├── trader.py             # Trader agent logic
-│   └── devops.py             # DevOps agent logic
+│   ├── devops.py             # DevOps agent logic
+│   └── auditor.py            # Read-only treasury audit report
 ├── metadata/
 │   ├── ceo.json              # ERC-8004 metadata
 │   ├── trader.json

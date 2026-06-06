@@ -121,7 +121,7 @@ contract TreasuryV2Test is Test {
         treasury.recordProfit();
 
         uint256 expectedFee = 50e18 * 5 / 100; // 2.5
-        uint256 expectedAssets = 100e18 + 50e18; // 150
+        uint256 expectedAssets = 100e18 + 47.5e18; // net profit after 5% fee
 
         assertEq(treasury.totalAssets(), expectedAssets);
         assertEq(treasury.pendingOwnerFee(), expectedFee);
@@ -141,7 +141,7 @@ contract TreasuryV2Test is Test {
         // Share price = 150 * 1e18 / 100 = 1.5e18 (before fee deduction? no, fee is pending)
         // Actually totalAssets = 150, totalShares = 100
         // sharePrice = 150/100 = 1.5e18
-        assertEq(treasury.sharePrice(), 1.5e18);
+        assertEq(treasury.sharePrice(), 1.475e18);
     }
 
     function test_UserValueAfterProfit() public {
@@ -156,7 +156,7 @@ contract TreasuryV2Test is Test {
 
         // User A has 100 shares, share price 1.5
         // userValue = 100 * 1.5 = 150
-        assertEq(treasury.userValue(USER_A), 150e18);
+        assertEq(treasury.userValue(USER_A), 147.5e18);
     }
 
     // ── Withdraw ──
@@ -201,7 +201,42 @@ contract TreasuryV2Test is Test {
         // So yes, user gets 150. The fee is just a pending amount the owner can claim.
         // The 150 represents totalAssets which includes the fee. When owner claims fee,
         // totalAssets decreases by the claimed amount.
-        assertEq(token.balanceOf(USER_A), userTokenBefore + 150e18);
+        assertEq(token.balanceOf(USER_A), userTokenBefore + 147.5e18);
+    }
+
+
+    // ── Payouts ──
+
+    function test_Payout() public {
+        vm.prank(USER_A);
+        treasury.deposit(100e18);
+
+        uint256 recipientBefore = token.balanceOf(USER_B);
+
+        vm.prank(CEO);
+        treasury.payout(USER_B, 10e18, "Community vendor payout");
+
+        assertEq(treasury.totalAssets(), 90e18);
+        assertEq(token.balanceOf(USER_B), recipientBefore + 10e18);
+        assertEq(treasury.sharePrice(), 0.9e18);
+    }
+
+    function test_RevertIf_NotOwnerPayout() public {
+        vm.prank(USER_A);
+        treasury.deposit(100e18);
+
+        vm.prank(USER_A);
+        vm.expectRevert("Only owner");
+        treasury.payout(USER_B, 10e18, "bad");
+    }
+
+    function test_RevertIf_PayoutTooLarge() public {
+        vm.prank(USER_A);
+        treasury.deposit(100e18);
+
+        vm.prank(CEO);
+        vm.expectRevert("Insufficient assets");
+        treasury.payout(USER_B, 101e18, "too much");
     }
 
     // ── Fee Claim ──

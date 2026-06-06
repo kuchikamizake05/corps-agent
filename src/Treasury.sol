@@ -17,8 +17,9 @@ contract Treasury {
 
     event Deposited(address indexed user, uint256 amount, uint256 mintedShares);
     event Withdrawn(address indexed user, uint256 sharesBurned, uint256 amount);
-    event ProfitRecorded(uint256 grossProfit, uint256 fee, uint256 newAssets);
+    event ProfitRecorded(uint256 grossProfit, uint256 fee, uint256 netProfit, uint256 newAssets);
     event FeeClaimed(address indexed owner, uint256 amount);
+    event Payout(address indexed recipient, uint256 amount, string reason);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner");
@@ -69,16 +70,18 @@ contract Treasury {
 
     /// @notice Owner records profit from trading. 5% fee accrues to owner.
     /// @dev Assumes profit token is already in this contract's balance.
+    ///      totalAssets tracks user-owned assets, excluding pending owner fees.
     function recordProfit() external onlyOwner {
-        uint256 grossProfit = token.balanceOf(address(this)) - totalAssets;
+        uint256 accounted = totalAssets + pendingOwnerFee;
+        uint256 grossProfit = token.balanceOf(address(this)) - accounted;
         require(grossProfit > 0, "No profit to record");
 
         uint256 fee = grossProfit * 5 / 100;
+        uint256 netProfit = grossProfit - fee;
         pendingOwnerFee += fee;
+        totalAssets += netProfit;
 
-        totalAssets += grossProfit;
-
-        emit ProfitRecorded(grossProfit, fee, totalAssets);
+        emit ProfitRecorded(grossProfit, fee, netProfit, totalAssets);
     }
 
     /// @notice Owner claims accumulated performance fees
@@ -88,6 +91,18 @@ contract Treasury {
         pendingOwnerFee = 0;
         token.transfer(owner, amount);
         emit FeeClaimed(owner, amount);
+    }
+
+    /// @notice Owner executes a stablecoin payout for community expenses/vendors.
+    function payout(address recipient, uint256 amount, string calldata reason) external onlyOwner {
+        require(recipient != address(0), "Invalid recipient");
+        require(amount > 0, "Zero amount");
+        require(amount <= totalAssets, "Insufficient assets");
+
+        totalAssets -= amount;
+        token.transfer(recipient, amount);
+
+        emit Payout(recipient, amount, reason);
     }
 
     /// @notice User's total value in token
