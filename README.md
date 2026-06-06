@@ -4,6 +4,11 @@
 
 Built for the **Onchain Agents Hackathon** by Celo.
 
+- Landing page: https://corps-agent-site.vercel.app
+- Telegram bot: https://t.me/CorpsAgentBot
+- Treasury: `0x326C57634866D065AA1ACC20592898F93725Ee5f`
+- Test token: `0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2`
+
 ---
 
 ## 🏗️ Architecture
@@ -42,18 +47,18 @@ Built for the **Onchain Agents Hackathon** by Celo.
 
 ## 🧠 Smart Contract
 
-**Treasury.sol** — Holds funds, tracks agent balances, handles deposits/allocations/payments.
+**Treasury.sol** — ERC-20 vault model with shares, profit accounting, and 5% performance fee.
 
-- `deposit()` — Accept CELO from any address
-- `allocate(to, amount)` — CEO allocates to sub-agents
-- `release(to, amount)` — CEO executes payments
-- Full on-chain transaction history with pagination
+- `deposit(amount)` — Deposit test USDC/tUSDC and mint vault shares
+- `withdraw(shares)` — Burn shares and withdraw proportional token value
+- `recordProfit()` — CEO records Trader profit already sent to treasury
+- `claimFee()` — Owner claims accrued 5% performance fee
 
 ### Deployments
 
 | Network | Address | Explorer |
 |---------|---------|---------|
-| Celo Sepolia | `0xf4832E5d4e653cAA6A345ab038445de076559544` | [View](https://sepolia.celoscan.io/address/0xf4832E5d4e653cAA6A345ab038445de076559544) |
+| Celo Sepolia | `0x326C57634866D065AA1ACC20592898F93725Ee5f` | [View](https://sepolia.celoscan.io/address/0x326C57634866D065AA1ACC20592898F93725Ee5f) |
 
 ## ⏰ Cron Schedule
 
@@ -101,7 +106,7 @@ forge script script/Deploy.s.sol:DeployTreasury \
 
 ```
 ├── src/Treasury.sol          # Smart contract
-├── test/Treasury.t.sol       # Foundry tests (8 tests)
+├── test/Treasury.t.sol       # Foundry tests (16 tests)
 ├── script/Deploy.s.sol       # Deploy script
 ├── agents/
 │   ├── ceo.py                # CEO agent logic
