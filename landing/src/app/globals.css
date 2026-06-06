@@ -2328,3 +2328,24 @@ html.is-scrolled .nav-logo {
 .nav-brand {
   gap: 10px !important;
 }
+
+/* ─── Match full navbar gradient with pill tone ────────────── */
+nav.topnav {
+  background: #090a0c !important;
+  background-image: linear-gradient(180deg, #15171a 0%, #090a0c 72%, #07080a 100%) !important;
+}
+
+.nav-row {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+html.is-scrolled nav.topnav {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+html.is-scrolled .nav-row {
+  background: #090a0c !important;
+  background-image: linear-gradient(180deg, #15171a 0%, #090a0c 72%, #07080a 100%) !important;
+}
