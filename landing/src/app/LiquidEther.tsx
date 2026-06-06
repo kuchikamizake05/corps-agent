@@ -67,15 +67,15 @@ void main() {
   float veins = smoothstep(0.56, 0.82, liquid * 0.62 + ether * 0.48);
   float soft = smoothstep(0.20, 0.92, ether);
 
-  vec3 base = vec3(0.020, 0.022, 0.024);
-  vec3 olive = vec3(0.26, 0.29, 0.09);
-  vec3 lime = vec3(0.82, 0.84, 0.18);
-  vec3 warm = vec3(0.48, 0.36, 0.08);
+  vec3 base = vec3(0.018, 0.020, 0.018);
+  vec3 olive = vec3(0.44, 0.47, 0.13);
+  vec3 lime = vec3(0.96, 0.98, 0.22);
+  vec3 warm = vec3(0.72, 0.50, 0.10);
 
   vec3 col = base;
-  col += olive * soft * 0.34;
-  col += lime * veins * 0.22;
-  col += warm * pow(liquid, 3.0) * 0.16;
+  col += olive * soft * 0.58;
+  col += lime * veins * 0.42;
+  col += warm * pow(liquid, 2.4) * 0.24;
 
   float vignette = smoothstep(1.02, 0.14, length(uv));
   col *= vignette;

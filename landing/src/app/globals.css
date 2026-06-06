@@ -1547,3 +1547,29 @@ footer,
     display: none;
   }
 }
+
+/* ─── Liquid Ether visibility boost ────────────────────────── */
+.liquid-ether-layer {
+  opacity: 1 !important;
+  filter: saturate(1.05) contrast(1.08) brightness(1.22) !important;
+}
+
+.liquid-ether-layer::after {
+  background:
+    radial-gradient(circle at 45% 4%, rgba(8,9,10,0), rgba(8,9,10,.18) 46%, rgba(8,9,10,.58) 100%),
+    linear-gradient(180deg, rgba(8,9,10,.05), rgba(8,9,10,.32)) !important;
+}
+
+.bg-grid {
+  opacity: .10 !important;
+}
+
+.bg-noise {
+  opacity: .025 !important;
+}
+
+.beam,
+.orbit,
+.scanline {
+  opacity: .08 !important;
+}
