@@ -1764,3 +1764,32 @@ html.is-scrolled .nav-cta {
     height: 48px;
   }
 }
+
+/* ─── Fixed navbar position ────────────────────────────────── */
+nav.topnav {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+}
+
+.section-hero {
+  padding-top: 84px !important;
+}
+
+html.is-scrolled nav.topnav {
+  transform: translateY(0) !important;
+}
+
+@media (max-height: 780px) and (min-width: 900px) {
+  .section-hero {
+    padding-top: 72px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .section-hero {
+    padding-top: 76px !important;
+  }
+}
