@@ -49,10 +49,15 @@ function SectionHeader({ eyebrow, title, copy }: { eyebrow: string; title: strin
 export default function Home() {
   return (
     <main>
+      <div className="ambient-bg" aria-hidden="true">
+        <div className="scanline" />
+        <div className="orbit orbit-a" />
+        <div className="orbit orbit-b" />
+      </div>
       <nav className="topnav">
         <div className="container-x flex h-16 items-center justify-between">
           <a href="#top" className="link flex items-center gap-3" aria-label="Corps Agent home">
-            <span className="flex h-8 w-8 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] font-mono text-xs text-white">CA</span>
+            <span className="brand-mark flex h-8 w-8 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] font-mono text-xs text-white">CA</span>
             <span>
               <span className="block text-sm font-medium text-white">Corps Agent</span>
               <span className="block font-mono text-[11px] text-[#62666d]">celo / treasury ops</span>
@@ -74,12 +79,12 @@ export default function Home() {
 
       <section id="top" className="container-x pb-24 pt-20 md:pb-32 md:pt-28">
         <div className="max-w-4xl">
-          <p className="eyebrow mb-5">ERC-8004 identities / Celo Sepolia / autonomous operations</p>
-          <h1 className="display max-w-4xl">Autonomous treasury operations, running as on-chain agents.</h1>
-          <p className="lede mt-6">
+          <p className="eyebrow reveal mb-5">ERC-8004 identities / Celo Sepolia / autonomous operations</p>
+          <h1 className="display reveal max-w-4xl [animation-delay:90ms]">Autonomous treasury operations, running as on-chain agents.</h1>
+          <p className="lede reveal mt-6 [animation-delay:180ms]">
             Corps Agent is a small operating company made of three agents: CEO, Trader, and DevOps. Treasury actions are recorded on Celo, identities are registered through ERC-8004, and an auditor module keeps payout risk visible.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="reveal mt-8 flex flex-wrap gap-3 [animation-delay:270ms]">
             <a className="btn btn-primary" href="https://t.me/CorpsAgentBot" target="_blank">Open bot</a>
             <a className="btn btn-ghost" href="https://github.com/kuchikamizake05/corps-agent" target="_blank">View source</a>
             <a className="btn btn-ghost" href={`https://sepolia.celoscan.io/address/${TREASURY}`} target="_blank">Verify contract</a>
@@ -87,8 +92,8 @@ export default function Home() {
         </div>
 
         <div className="mt-16 grid gap-4 md:grid-cols-4">
-          {metrics.map(([label, value, unit]) => (
-            <div className="card p-5" key={label}>
+          {metrics.map(([label, value, unit], index) => (
+            <div className="card hover-lift reveal p-5" style={{ animationDelay: `${360 + index * 70}ms` }} key={label}>
               <p className="metric-label">{label}</p>
               <p className="metric mt-4">{value}</p>
               <p className="label mt-2">{unit}</p>
@@ -105,7 +110,7 @@ export default function Home() {
           title="Clear roles, minimal surface area."
           copy="No fake dashboard metrics. Each unit maps to a concrete runtime responsibility and a verifiable identity or module in the system."
         />
-        <div className="card overflow-hidden">
+        <div className="card reveal overflow-hidden">
           <table className="tbl">
             <thead>
               <tr>
@@ -118,7 +123,7 @@ export default function Home() {
             </thead>
             <tbody>
               {agents.map(([id, name, role, notes, status]) => (
-                <tr key={id}>
+                <tr className="row-motion" key={id}>
                   <td className="font-mono text-[#8a8f98]">#{id}</td>
                   <td className="font-medium text-white">{name}</td>
                   <td>{role}</td>
@@ -138,8 +143,8 @@ export default function Home() {
           copy="Designed for judges to verify quickly: funds enter Treasury, profit is recorded, payout is executed, and audit checks stay green."
         />
         <div className="grid gap-3 md:grid-cols-5">
-          {flow.map(([step, title, copy]) => (
-            <div className="card p-5" key={step}>
+          {flow.map(([step, title, copy], index) => (
+            <div className="card hover-lift reveal p-5" style={{ animationDelay: `${index * 70}ms` }} key={step}>
               <p className="label">{step}</p>
               <h3 className="h3 mt-5">{title}</h3>
               <p className="body mt-3">{copy}</p>
@@ -163,7 +168,7 @@ export default function Home() {
             <span className="tag">risk LOW</span>
           </div>
         </div>
-        <div className="terminal">
+        <div className="terminal reveal terminal-glow">
           <div className="terminal-head">
             <span className="led bg-[#ff5f57]" />
             <span className="led bg-[#febc2e]" />
@@ -192,8 +197,8 @@ Recommendation      treasury healthy for community operations</pre>
           copy="Telegram bot exposes a small command set for status, treasury, agents, audit, and scripted profit/payout demos."
         />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {commands.map((cmd) => (
-            <div className="card flex h-14 items-center px-4 font-mono text-sm text-[#d0d6e0]" key={cmd}>
+          {commands.map((cmd, index) => (
+            <div className="card command-card reveal flex h-14 items-center px-4 font-mono text-sm text-[#d0d6e0]" style={{ animationDelay: `${index * 45}ms` }} key={cmd}>
               <span className="mr-3 text-[#62666d]">›</span>{cmd}
             </div>
           ))}
@@ -209,22 +214,22 @@ Recommendation      treasury healthy for community operations</pre>
           copy="Treasury contract, test token, deployment, deposit, profit recording, and payout are linked to Celo Sepolia explorer."
         />
         <div className="grid gap-3 lg:grid-cols-2">
-          <a className="link-card" href={`https://sepolia.celoscan.io/address/${TREASURY}`} target="_blank">
+          <a className="link-card reveal" href={`https://sepolia.celoscan.io/address/${TREASURY}`} target="_blank">
             <span>
               <span className="block text-sm font-medium text-white">Treasury contract</span>
               <span className="mt-1 block break-all font-mono text-xs text-[#8a8f98]">{TREASURY}</span>
             </span>
             <span className="arrow">→</span>
           </a>
-          <a className="link-card" href={`https://sepolia.celoscan.io/address/${TOKEN}`} target="_blank">
+          <a className="link-card reveal" href={`https://sepolia.celoscan.io/address/${TOKEN}`} target="_blank">
             <span>
               <span className="block text-sm font-medium text-white">tUSDC test token</span>
               <span className="mt-1 block break-all font-mono text-xs text-[#8a8f98]">{TOKEN}</span>
             </span>
             <span className="arrow">→</span>
           </a>
-          {txs.map(([label, hash]) => (
-            <a className="link-card" href={`https://sepolia.celoscan.io/tx/${hash}`} target="_blank" key={hash}>
+          {txs.map(([label, hash], index) => (
+            <a className="link-card reveal" style={{ animationDelay: `${index * 45}ms` }} href={`https://sepolia.celoscan.io/tx/${hash}`} target="_blank" key={hash}>
               <span>
                 <span className="block text-sm font-medium text-white">{label}</span>
                 <span className="mt-1 block break-all font-mono text-xs text-[#8a8f98]">{hash}</span>
@@ -236,7 +241,7 @@ Recommendation      treasury healthy for community operations</pre>
       </section>
 
       <section className="container-x pb-24">
-        <div className="card p-8 md:p-10">
+        <div className="card cta-motion p-8 md:p-10">
           <p className="eyebrow mb-3">Submission-ready</p>
           <h2 className="h2 max-w-2xl">A working prototype for stablecoin-native community treasury operations.</h2>
           <p className="body mt-4 max-w-2xl">
