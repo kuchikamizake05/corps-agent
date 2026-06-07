@@ -28,3 +28,6 @@ broadcast/
 
 # Hermes cron symlinks
 .hermes/
+
+# Local planning notes
+docs/PRD_MANTLE.md
