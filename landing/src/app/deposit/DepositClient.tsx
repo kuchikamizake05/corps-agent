@@ -57,7 +57,7 @@ export default function DepositClient() {
     await switchChainAsync({ chainId: celoSepolia.id })
   }
 
-  async function deposit() {
+  async function approve() {
     try {
       if (!isConnected) {
         await open({ view: 'Connect' })
@@ -69,7 +69,7 @@ export default function DepositClient() {
       if (units <= BigInt(0)) throw new Error('Amount must be greater than zero')
 
       setStep('approving')
-      setMessage('Step 1/2: approve test tUSDC spend for Treasury contract.')
+      setMessage('Approving test tUSDC spend for Treasury contract.')
       const approveHash = await writeContractAsync({
         address: TOKEN,
         abi: erc20Abi,
@@ -78,9 +78,27 @@ export default function DepositClient() {
         chainId: celoSepolia.id,
       })
       setTxHash(approveHash)
+      setStep('confirmed')
+      setMessage('Approve transaction submitted. After it confirms in your wallet, submit the Treasury deposit.')
+    } catch (error) {
+      setStep('error')
+      setMessage(error instanceof Error ? error.message : 'Transaction cancelled or failed')
+    }
+  }
+
+  async function deposit() {
+    try {
+      if (!isConnected) {
+        await open({ view: 'Connect' })
+        return
+      }
+
+      await ensureNetwork()
+      const units = parseUnits(amount, DECIMALS)
+      if (units <= BigInt(0)) throw new Error('Amount must be greater than zero')
 
       setStep('depositing')
-      setMessage('Step 2/2: call Treasury.deposit(amount).')
+      setMessage('Calling Treasury.deposit(amount).')
       const depositHash = await writeContractAsync({
         address: TREASURY,
         abi: treasuryAbi,
@@ -102,7 +120,7 @@ export default function DepositClient() {
     <div className="min-h-screen bg-[#07080a] text-white">
       <main className="mx-auto grid min-h-screen w-full max-w-[1180px] gap-8 px-6 pb-16 pt-24 md:grid-cols-[.92fr_1.08fr] md:px-8 md:pb-24 md:pt-32">
         <section className="flex flex-col justify-center">
-          <a href="/" className="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[.03] px-3 py-1.5 text-xs font-medium text-zinc-400 transition hover:text-white">← Back to landing</a>
+          <a href="/" className="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[.03] px-3 py-1.5 text-xs font-medium text-zinc-400 transition hover:text-white">Back to landing</a>
           <p className="text-xs font-semibold uppercase tracking-[.24em] text-[#f5f257]">Corps Agent Deposit</p>
           <h1 className="mt-4 max-w-[620px] text-[clamp(2.4rem,5.4vw,4.8rem)] font-semibold leading-[.96] tracking-[-.06em]">Deposit through wallet, verify through bot.</h1>
           <p className="mt-5 max-w-[560px] text-[15px] leading-7 text-[#a1a7b0] md:text-base">Connect wallet with Reown AppKit, switch to Celo Sepolia, approve test tUSDC, then call Treasury.deposit(). Corps Agent bot watches the event and confirms your credited balance.</p>
@@ -140,9 +158,10 @@ export default function DepositClient() {
 
                 <div className="rounded-2xl bg-[#f5f257]/[.08] p-4 text-sm leading-6 text-[#d9d77a] shadow-[0_0_0_1px_rgba(245,242,87,.12)]">{message}</div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-3">
                   <button disabled={busy} onClick={() => open({ view: 'Connect' })} className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60">{isConnected ? 'Manage wallet' : 'Connect wallet'}</button>
-                  <button disabled={busy} onClick={deposit} className="rounded-full bg-[#f5f257] px-5 py-3 text-sm font-semibold text-[#08090a] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60">{busy ? 'Processing...' : wrongNetwork ? 'Switch + Deposit' : 'Approve + Deposit'}</button>
+                  <button disabled={busy} onClick={approve} className="rounded-full bg-[#f5f257] px-5 py-3 text-sm font-semibold text-[#08090a] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60">{step === 'approving' ? 'Approving...' : wrongNetwork ? 'Switch + Approve' : 'Approve'}</button>
+                  <button disabled={busy} onClick={deposit} className="rounded-full bg-[#f5f257] px-5 py-3 text-sm font-semibold text-[#08090a] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60">{step === 'depositing' ? 'Depositing...' : wrongNetwork ? 'Switch + Deposit' : 'Deposit'}</button>
                 </div>
 
                 {explorerUrl ? <a className="block truncate rounded-full border border-white/10 px-4 py-3 text-center font-mono text-xs text-zinc-300 transition hover:border-[#f5f257]/40 hover:text-white" href={explorerUrl} target="_blank" rel="noreferrer">View transaction: {short(txHash)}</a> : null}
