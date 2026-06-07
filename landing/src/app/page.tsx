@@ -88,37 +88,37 @@ export default function Home() {
 
       <Navbar />
 
-      <section id="top" className="mx-auto w-full max-w-[1180px] px-6 pb-12 pt-24 md:px-8 md:pt-[86px]">
-        <div className="grid items-center gap-9 lg:grid-cols-[minmax(0,1fr)_380px] xl:gap-12">
+      <section id="top" className="mx-auto w-full max-w-[1120px] px-5 pb-10 pt-20 md:px-7 md:pt-[74px]">
+        <div className="grid items-center gap-7 lg:grid-cols-[minmax(0,1fr)_350px] xl:gap-9">
           <div>
-            <p className="reveal mb-4 text-[11px] font-semibold uppercase tracking-[.18em] text-[#f5f257]">ERC-8004 identities / Celo Sepolia / autonomous operations</p>
-            <h1 className="reveal max-w-[760px] text-[clamp(2.6rem,6.2vw,5.4rem)] font-semibold leading-[.93] tracking-[-.07em] text-white [animation-delay:90ms]">Autonomous treasury operations, running as on-chain agents.</h1>
-            <p className="reveal mt-5 max-w-[660px] text-[15px] leading-7 text-[#a1a7b0] [animation-delay:180ms] md:text-base">
+            <p className="reveal mb-3 text-[10px] font-semibold uppercase tracking-[.17em] text-[#f5f257]">ERC-8004 identities / Celo Sepolia / autonomous operations</p>
+            <h1 className="reveal max-w-[650px] text-[clamp(2.25rem,5.1vw,4.55rem)] font-semibold leading-[.94] tracking-[-.065em] text-white [animation-delay:90ms]">Autonomous treasury operations, running as on-chain agents.</h1>
+            <p className="reveal mt-4 max-w-[590px] text-sm leading-6 text-[#a1a7b0] [animation-delay:180ms] md:text-[15px]">
               Corps Agent is a small operating company made of three agents: CEO, Trader, and DevOps. Treasury actions are recorded on Celo, identities are registered through ERC-8004, and an auditor module keeps payout risk visible.
             </p>
-            <div className="reveal mt-7 flex flex-wrap gap-3 [animation-delay:270ms]">
-              <a className="inline-flex h-10 items-center justify-center rounded-full bg-[#f5f257] px-5 text-sm font-semibold text-[#08090a] shadow-[0_14px_34px_rgba(245,242,87,.18)] transition hover:-translate-y-px hover:bg-[#ffff75]" href="/deposit">Deposit demo</a>
-              <a className="inline-flex h-10 items-center justify-center rounded-full bg-[#15171a] px-5 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)] transition hover:-translate-y-px hover:bg-[#1b1e23]" href="https://t.me/CorpsAgentBot" target="_blank" rel="noreferrer">Open bot</a>
+            <div className="reveal mt-5 flex flex-wrap gap-2.5 [animation-delay:270ms]">
+              <a className="inline-flex h-9 items-center justify-center rounded-full bg-[#f5f257] px-4 text-[13px] font-semibold text-[#08090a] shadow-[0_12px_28px_rgba(245,242,87,.16)] transition hover:-translate-y-px hover:bg-[#ffff75]" href="/deposit">Deposit demo</a>
+              <a className="inline-flex h-9 items-center justify-center rounded-full bg-[#15171a] px-4 text-[13px] font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)] transition hover:-translate-y-px hover:bg-[#1b1e23]" href="https://t.me/CorpsAgentBot" target="_blank" rel="noreferrer">Open bot</a>
             </div>
           </div>
 
-          <div className="reveal rounded-[28px] bg-[#0d0f12] p-4 shadow-[0_0_0_1px_rgba(255,255,255,.07),0_28px_90px_rgba(0,0,0,.42),inset_0_1px_0_rgba(255,255,255,.035)] [animation-delay:300ms] md:p-5">
-            <div className="mb-3 flex items-center justify-between gap-4 border-b border-white/[.06] pb-3 font-mono text-[11px] uppercase tracking-[.12em] text-[#8a8f98]"><span>treasury workflow</span><span className="truncate text-[#f5f257]">{short(TREASURY)}</span></div>
-            <div className="space-y-1.5">
+          <div className="reveal rounded-[24px] bg-[#0d0f12] p-3.5 shadow-[0_0_0_1px_rgba(255,255,255,.07),0_24px_72px_rgba(0,0,0,.38),inset_0_1px_0_rgba(255,255,255,.035)] [animation-delay:300ms] md:p-4">
+            <div className="mb-2.5 flex items-center justify-between gap-4 border-b border-white/[.06] pb-2.5 font-mono text-[10px] uppercase tracking-[.12em] text-[#8a8f98]"><span>treasury workflow</span><span className="truncate text-[#f5f257]">{short(TREASURY)}</span></div>
+            <div className="space-y-1">
               {flow.map(([step, title, copy]) => (
-                <div className="grid grid-cols-[34px_1fr] gap-3 rounded-2xl p-3 transition hover:bg-white/[.035]" key={step}>
-                  <span className="font-mono text-xs text-[#f5f257]">{step}</span>
-                  <div><strong className="block text-sm font-semibold text-white">{title}</strong><p className="mt-1 text-sm leading-6 text-[#8a8f98]">{copy}</p></div>
+                <div className="grid grid-cols-[30px_1fr] gap-2.5 rounded-xl p-2.5 transition hover:bg-white/[.035]" key={step}>
+                  <span className="font-mono text-[11px] text-[#f5f257]">{step}</span>
+                  <div><strong className="block text-[13px] font-semibold text-white">{title}</strong><p className="mt-0.5 text-[13px] leading-5 text-[#8a8f98]">{copy}</p></div>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {metrics.map(([label, value, unit], index) => (
-            <div className="reveal rounded-[22px] bg-[#0d0f12] p-5 shadow-[0_0_0_1px_rgba(255,255,255,.06),inset_0_1px_0_rgba(255,255,255,.03)] transition hover:-translate-y-1 hover:bg-[#101216]" style={{ animationDelay: `${360 + index * 70}ms` }} key={label}>
-              <p className="text-[11px] font-semibold uppercase tracking-[.14em] text-[#8a8f98]">{label}</p><p className="mt-4 font-mono text-[clamp(1.35rem,2.1vw,1.85rem)] font-semibold tracking-[-.04em] text-white">{value}</p><p className="mt-2 text-xs uppercase tracking-[.14em] text-[#f5f257]">{unit}</p>
+            <div className="reveal rounded-[18px] bg-[#0d0f12] p-4 shadow-[0_0_0_1px_rgba(255,255,255,.06),inset_0_1px_0_rgba(255,255,255,.03)] transition hover:-translate-y-1 hover:bg-[#101216]" style={{ animationDelay: `${360 + index * 70}ms` }} key={label}>
+              <p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#8a8f98]">{label}</p><p className="mt-3 font-mono text-[clamp(1.2rem,1.9vw,1.65rem)] font-semibold tracking-[-.04em] text-white">{value}</p><p className="mt-1.5 text-[11px] uppercase tracking-[.14em] text-[#f5f257]">{unit}</p>
             </div>
           ))}
         </div>
