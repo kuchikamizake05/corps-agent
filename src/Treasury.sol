@@ -20,6 +20,13 @@ contract Treasury {
     event ProfitRecorded(uint256 grossProfit, uint256 fee, uint256 netProfit, uint256 newAssets);
     event FeeClaimed(address indexed owner, uint256 amount);
     event Payout(address indexed recipient, uint256 amount, string reason);
+    event AgentDecision(
+        uint256 indexed agentId,
+        string action,
+        string reason,
+        bytes32 evidenceHash,
+        uint256 timestamp
+    );
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner");
@@ -105,9 +112,31 @@ contract Treasury {
         emit Payout(recipient, amount, reason);
     }
 
+    /// @notice Owner records a public agent decision without moving funds.
+    function recordAgentDecision(
+        uint256 agentId,
+        string calldata action,
+        string calldata reason,
+        bytes32 evidenceHash
+    ) external onlyOwner {
+        emit AgentDecision(agentId, action, reason, evidenceHash, block.timestamp);
+    }
+
     /// @notice User's total value in token
     function userValue(address user) external view returns (uint256) {
         return shares[user] * _sharePrice() / 1e18;
+    }
+
+    /// @notice Shares minted for a deposit at current price.
+    function previewDeposit(uint256 amount) external view returns (uint256) {
+        if (totalShares == 0) return amount;
+        return amount * totalShares / totalAssets;
+    }
+
+    /// @notice Token amount returned for burning shares at current price.
+    function previewWithdraw(uint256 shareAmount) external view returns (uint256) {
+        if (totalShares == 0) return 0;
+        return shareAmount * totalAssets / totalShares;
     }
 
     /// @notice Current share price in token decimals (1e18 precision)

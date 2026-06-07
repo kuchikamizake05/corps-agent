@@ -1,63 +1,66 @@
 #!/usr/bin/env python3
-"""Trader Agent — send simulated profit to Treasury using cast"""
-import os, subprocess, sys
+"""Trader Agent: send simulated profit to Treasury using cast."""
+
+import os
+import subprocess
 from pathlib import Path
 
-# Load env
-env_file = Path(__file__).parent.parent / ".env"
-for line in env_file.read_text().splitlines():
-    if "=" in line and not line.startswith("#"):
-        k, v = line.split("=", 1)
-        os.environ.setdefault(k.strip(), v.strip())
+ENV = Path(__file__).parent.parent / ".env"
+if ENV.exists():
+    for line in ENV.read_text().splitlines():
+        if "=" in line and not line.startswith("#"):
+            key, value = line.split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip())
 
-RPC = "https://forno.celo-sepolia.celo-testnet.org"
+RPC = os.environ.get("CELO_SEPOLIA_RPC", "https://forno.celo-sepolia.celo-testnet.org")
 TREASURY = os.environ["TREASURY_ADDRESS"]
 TOKEN = os.environ["TOKEN"]
 TRADER_PK = os.environ["TRADER_PRIVATE_KEY"]
+TRADER = os.environ["TRADER_ADDRESS"]
+TOKEN_SCALE = 10**6
+PRICE_SCALE = 10**18
 
-def cast(*args):
-    result = subprocess.run(["cast"] + list(args), capture_output=True, text=True)
-    return result
 
-def parse_uint(output):
-    """Parse cast output: '99995000000000000000 [9.999e19]' → int"""
-    val = output.stdout.strip().split()[0]
+def cast(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["cast", *args], capture_output=True, text=True)
+
+
+def parse_uint(result: subprocess.CompletedProcess) -> int:
     try:
-        return int(val)
-    except:
+        return int(result.stdout.strip().split()[0])
+    except Exception:
         return 0
 
-# Read state
-bal = cast("call", TOKEN, "balanceOf(address)(uint256)", os.environ["TRADER_ADDRESS"], "--rpc-url", RPC)
-treasury_assets = cast("call", TREASURY, "totalAssets()(uint256)", "--rpc-url", RPC)
-treasury_shares = cast("call", TREASURY, "totalShares()(uint256)", "--rpc-url", RPC)
-price = cast("call", TREASURY, "sharePrice()(uint256)", "--rpc-url", RPC)
-celo_bal = cast("balance", os.environ["TRADER_ADDRESS"], "--rpc-url", RPC)
 
-bal_i = parse_uint(bal)
-print(f"=== Trader Report (Agent #311) ===")
-print(f"Trader:  {os.environ['TRADER_ADDRESS']}")
-print(f"ERC-8004: https://sepolia.celoscan.io/token/0x8004A818BFB912233c491871b3d84c89A494BD9e?a=311")
-print(f"CELO:    {parse_uint(celo_bal) / 1e18:.4f}")
-print(f"tUSDC:   {bal_i / 1e18:.4f}")
-print(f"")
-print(f"Treasury assets: {parse_uint(treasury_assets) / 1e18:.4f} tUSDC")
-print(f"Treasury shares: {parse_uint(treasury_shares) / 1e18:.4f}")
-print(f"Share price:     {parse_uint(price) / 1e18:.4f} tUSDC")
-print(f"")
+def main() -> None:
+    bal = parse_uint(cast("call", TOKEN, "balanceOf(address)(uint256)", TRADER, "--rpc-url", RPC))
+    assets = parse_uint(cast("call", TREASURY, "totalAssets()(uint256)", "--rpc-url", RPC))
+    shares = parse_uint(cast("call", TREASURY, "totalShares()(uint256)", "--rpc-url", RPC))
+    share_price = parse_uint(cast("call", TREASURY, "sharePrice()(uint256)", "--rpc-url", RPC))
+    celo_bal = parse_uint(cast("balance", TRADER, "--rpc-url", RPC))
 
-# Send simulated profit
-if bal_i >= int(0.005 * 1e18):
-    profit = min(bal_i, int(0.005 * 1e18))
-    print(f"Sending {profit / 1e18:.4f} tUSDC to Treasury...")
-    result = cast("send", TOKEN, f"transfer(address,uint256)", TREASURY, str(profit),
-                  "--private-key", TRADER_PK, "--rpc-url", RPC, "--gas-limit", "100000")
-    for line in result.stderr.splitlines():
-        if "transactionHash" in line or "status" in line or "Error" in line:
-            print(f"  {line.strip()}")
-    if result.returncode == 0:
-        print(f"✅ Done!")
+    print("=== Trader Report (Agent #311) ===")
+    print(f"Trader:  {TRADER}")
+    print("ERC-8004: https://sepolia.celoscan.io/token/0x8004A818BFB912233c491871b3d84c89A494BD9e?a=311")
+    print(f"CELO:    {celo_bal / 1e18:.4f}")
+    print(f"tUSDC:   {bal / TOKEN_SCALE:.4f}")
+    print("")
+    print(f"Treasury assets: {assets / TOKEN_SCALE:.4f} tUSDC")
+    print(f"Treasury shares: {shares / TOKEN_SCALE:.4f}")
+    print(f"Share price:     {share_price / PRICE_SCALE:.4f} tUSDC")
+    print("")
+
+    if bal >= int(0.005 * TOKEN_SCALE):
+        profit = min(bal, int(0.005 * TOKEN_SCALE))
+        print(f"Sending {profit / TOKEN_SCALE:.4f} tUSDC to Treasury...")
+        result = cast("send", TOKEN, "transfer(address,uint256)", TREASURY, str(profit), "--private-key", TRADER_PK, "--rpc-url", RPC, "--gas-limit", "100000")
+        for line in result.stderr.splitlines():
+            if "transactionHash" in line or "status" in line or "Error" in line:
+                print(f"  {line.strip()}")
+        print("Done." if result.returncode == 0 else f"Failed: {result.stderr[-200:]}")
     else:
-        print(f"❌ Failed: {result.stderr[-200:]}")
-else:
-    print(f"⚠️  Low balance ({bal_i / 1e18:.4f}), need >= 0.005")
+        print(f"Low balance ({bal / TOKEN_SCALE:.4f}), need >= 0.005")
+
+
+if __name__ == "__main__":
+    main()

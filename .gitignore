@@ -30,3 +30,4 @@ broadcast/
 .hermes/
 
 # Local planning notes
+agents/wallets.json

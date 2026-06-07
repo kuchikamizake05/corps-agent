@@ -37,6 +37,14 @@ contract TreasuryV2Test is Test {
     Treasury public treasury;
     TestToken public token;
 
+    event AgentDecision(
+        uint256 indexed agentId,
+        string action,
+        string reason,
+        bytes32 evidenceHash,
+        uint256 timestamp
+    );
+
     address CEO = makeAddr("ceo");
     address USER_A = makeAddr("user_a");
     address USER_B = makeAddr("user_b");
@@ -157,6 +165,30 @@ contract TreasuryV2Test is Test {
         // User A has 100 shares, share price 1.5
         // userValue = 100 * 1.5 = 150
         assertEq(treasury.userValue(USER_A), 147.5e18);
+    }
+
+    function test_PreviewDepositAndWithdraw() public {
+        vm.prank(USER_A);
+        treasury.deposit(100e18);
+
+        vm.prank(TRADER);
+        token.transfer(address(treasury), 50e18);
+
+        vm.prank(CEO);
+        treasury.recordProfit();
+
+        assertEq(treasury.previewDeposit(147.5e18), 100e18);
+        assertEq(treasury.previewWithdraw(100e18), 147.5e18);
+    }
+
+    function test_RecordAgentDecision() public {
+        bytes32 evidence = keccak256("audit-pass");
+
+        vm.expectEmit(true, false, false, true);
+        emit AgentDecision(310, "recordProfit", "cycleComplete", evidence, block.timestamp);
+
+        vm.prank(CEO);
+        treasury.recordAgentDecision(310, "recordProfit", "cycleComplete", evidence);
     }
 
     // ── Withdraw ──

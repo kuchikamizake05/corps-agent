@@ -35,7 +35,7 @@ const txs = [
   ['Community payout', 'Transaction hash', '0xaf7d69109bfc66c26201b5055b0cfaac2d45a1666dc460d8031c18a31d334841', 'https://sepolia.celoscan.io/tx/0xaf7d69109bfc66c26201b5055b0cfaac2d45a1666dc460d8031c18a31d334841'],
 ]
 
-const commands = ['/status', '/treasury', '/audit', '/agents', '/profit-demo', '/payout-demo', '/demo-script']
+const commands = ['/status', '/treasury', '/audit', '/setwallet', '/position', '/proof', '/agents', '/demo-script']
 
 const stack = [
   ['Identity', 'ERC-8004 agent IDs', '310 / 311 / 312'],
@@ -161,17 +161,16 @@ export default function Home() {
       </section>
 
       <section id="audit" className="container-x section-y grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-        <div><p className="eyebrow mb-3">Auditor module</p><h2 className="h2">Trust layer for autonomous payouts.</h2><p className="body mt-5 max-w-xl">Auditor is intentionally read-only. It checks treasury solvency, share supply, fee liability, payout impact, and risk level without becoming another actor that can move funds.</p><div className="mt-6 flex flex-wrap gap-2"><span className="tag">balance PASS</span><span className="tag">accounting PASS</span><span className="tag">risk LOW</span></div></div>
+        <div><p className="eyebrow mb-3">Treasury Audit</p><h2 className="h2">Trust layer for autonomous payouts.</h2><p className="body mt-5 max-w-xl">Auditor is intentionally read-only. It checks treasury solvency, share accounting, fee liability, payout impact, and risk level without becoming another actor that can move funds.</p><div className="mt-6 flex flex-wrap gap-2"><span className="tag">solvency PASS</span><span className="tag">share accounting PASS</span><span className="tag">payout risk LOW</span><span className="tag">fee liability 5%</span></div></div>
         <div className="terminal reveal terminal-glow"><div className="terminal-head"><span className="led bg-[#ff5f57]" /><span className="led bg-[#febc2e]" /><span className="led bg-[#28c840]" /><span className="ml-2">auditor.py</span></div><pre className="terminal-body"><span className="muted">$</span> run audit --treasury {short(TREASURY)}
 
-Balance check       <span className="ok">PASS</span>
-Accounting check    <span className="ok">PASS</span>
-Share supply check  <span className="ok">PASS</span>
-Fee liability check <span className="ok">PASS</span>
-Payout impact check <span className="ok">PASS</span>
+Solvency            <span className="ok">PASS</span>
+Share accounting    <span className="ok">PASS</span>
+Payout risk         <span className="ok">LOW</span>
+Fee liability       <span className="ok">5%</span>
 
 Risk level          <span className="ok">LOW</span>
-Status              <span className="ok">HEALTHY</span></pre></div>
+Last check          <span className="ok">2m ago</span></pre></div>
       </section>
 
       <section className="container-x section-y pt-4">
