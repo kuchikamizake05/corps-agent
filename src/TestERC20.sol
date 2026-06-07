@@ -6,7 +6,7 @@ pragma solidity ^0.8.28;
 contract TestERC20 {
     string public name = "Test USDC";
     string public symbol = "tUSDC";
-    uint8 public decimals = 18;
+    uint8 public decimals = 6;
     uint256 public totalSupply;
 
     mapping(address => uint256) public balanceOf;
