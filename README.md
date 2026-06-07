@@ -76,6 +76,14 @@ python3 agents/bot.py
 9. Run `/position`
 10. Run `/proof`
 
+Before the live judge run, check local readiness:
+
+```bash
+node scripts/check-demo-readiness.js
+```
+
+This intentionally fails until the faucet address and bot/runtime secrets are configured.
+
 ## Read-only API
 
 - `GET /api/health`
