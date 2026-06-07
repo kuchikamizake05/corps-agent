@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import DepositClient from './DepositClient'
+import DepositShell from './DepositShell'
 
 export const metadata: Metadata = {
   title: 'Deposit — Corps Agent',
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function DepositPage() {
-  return <DepositClient />
+  return <DepositShell />
 }
