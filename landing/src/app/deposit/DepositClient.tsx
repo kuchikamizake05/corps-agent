@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppKit } from '@reown/appkit/react'
-import { formatUnits, parseUnits } from 'viem'
+import { formatUnits, getAddress, isAddress, parseUnits } from 'viem'
+import { useSearchParams } from 'next/navigation'
 import { useAccount, usePublicClient, useSwitchChain, useWriteContract } from 'wagmi'
 import { celoSepolia } from '../celoSepolia'
 
@@ -95,6 +96,7 @@ function parseTokenInput(value: string) {
 }
 
 export default function DepositClient() {
+  const searchParams = useSearchParams()
   const { open } = useAppKit()
   const { address, isConnected, chainId } = useAccount()
   const publicClient = usePublicClient({ chainId: celoSepolia.id })
@@ -110,6 +112,11 @@ export default function DepositClient() {
   const [faucet, setFaucet] = useState({ canClaim: false, nextClaimTime: ZERO })
 
   const explorerUrl = useMemo(() => (txHash ? `${EXPLORER}/tx/${txHash}` : ''), [txHash])
+  const tg = searchParams.get('tg')
+  const verifiedWalletParam = searchParams.get('wallet')
+  const verifiedWallet = verifiedWalletParam && isAddress(verifiedWalletParam) ? getAddress(verifiedWalletParam) : null
+  const connectedWallet = address ? getAddress(address) : null
+  const walletMismatch = Boolean(verifiedWallet && connectedWallet && verifiedWallet !== connectedWallet)
   const busy = ['claiming', 'approving', 'depositing', 'withdrawing'].includes(step)
   const wrongNetwork = isConnected && chainId !== celoSepolia.id
   const faucetReady = Boolean(FAUCET)
@@ -117,6 +124,11 @@ export default function DepositClient() {
   async function ensureWallet() {
     if (!isConnected || !address) {
       await open({ view: 'Connect' })
+      return false
+    }
+    if (walletMismatch) {
+      setStep('error')
+      setMessage(`Wallet mismatch. Connect verified wallet ${short(verifiedWallet!)}.`)
       return false
     }
     if (chainId !== celoSepolia.id) await switchChainAsync({ chainId: celoSepolia.id })
@@ -250,7 +262,7 @@ export default function DepositClient() {
               <p className="mt-1 text-sm leading-5 text-zinc-400">Gas first, then claim demo tUSDC.</p>
               <div className="mt-3 grid gap-2">
                 <a className="inline-flex h-9 items-center justify-center rounded-md bg-white px-3 text-sm font-semibold text-black transition hover:-translate-y-px" href={CELO_FAUCET} target="_blank" rel="noreferrer">Get CELO gas</a>
-                <button disabled={busy || !faucetReady || (isConnected && !faucet.canClaim)} onClick={claim} className="inline-flex h-9 items-center justify-center rounded-md bg-[#f5f257] px-3 text-sm font-semibold text-[#08090a] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50">{step === 'claiming' ? 'Claiming...' : 'Claim 100 tUSDC'}</button>
+                <button disabled={busy || walletMismatch || !faucetReady || (isConnected && !faucet.canClaim)} onClick={claim} className="inline-flex h-9 items-center justify-center rounded-md bg-[#f5f257] px-3 text-sm font-semibold text-[#08090a] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50">{step === 'claiming' ? 'Claiming...' : 'Claim 100 tUSDC'}</button>
               </div>
               <p className="mt-2 text-xs text-zinc-500">Cooldown: {faucetReady ? cooldownLabel(faucet.nextClaimTime, faucet.canClaim) : 'faucet address not configured'}</p>
             </div>
@@ -310,13 +322,21 @@ export default function DepositClient() {
                 <div className="grid gap-1.5 rounded-lg border border-white/[.07] bg-black/20 p-1.5 text-sm text-zinc-400 sm:grid-cols-2">
                   <Row label="Wallet" value={address ? short(address) : 'not connected'} mono />
                   <Row label="Chain" value={wrongNetwork ? 'wrong network' : 'Celo Sepolia'} tone={wrongNetwork ? 'bad' : 'default'} />
+                  {tg ? <Row label="Telegram" value={tg} mono /> : null}
+                  {verifiedWallet ? <Row label="Verified" value={short(verifiedWallet)} mono tone={walletMismatch ? 'bad' : 'default'} /> : null}
                 </div>
+
+                {walletMismatch ? (
+                  <div className="rounded-lg border border-red-400/20 bg-red-400/[.08] px-3 py-2 text-sm leading-5 text-red-200">
+                    Wallet mismatch. Connected wallet {address ? short(address) : 'unknown'} beda dari verified wallet {verifiedWallet ? short(verifiedWallet) : 'unknown'}. Switch ke verified wallet dulu.
+                  </div>
+                ) : null}
 
                 <div className={`rounded-lg border px-3 py-2 text-sm leading-5 ${step === 'error' ? 'border-red-400/20 bg-red-400/[.08] text-red-200' : 'border-[#f5f257]/15 bg-[#f5f257]/[.08] text-[#e8e68a]'}`}>{message}</div>
 
                 <div className="grid gap-2 sm:grid-cols-2">
                   <button disabled={busy} onClick={() => open({ view: 'Connect' })} className="h-9 rounded-lg bg-white px-3 text-sm font-semibold text-black transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60">{isConnected ? 'Manage wallet' : 'Connect wallet'}</button>
-                  <button disabled={busy} onClick={mode === 'deposit' ? deposit : withdraw} className="h-9 rounded-lg bg-[#f5f257] px-3 text-sm font-semibold text-[#08090a] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60">{step === 'approving' ? 'Approving...' : step === 'depositing' ? 'Depositing...' : step === 'withdrawing' ? 'Withdrawing...' : wrongNetwork ? `Switch + ${mode}` : mode === 'deposit' ? 'Deposit' : 'Withdraw'}</button>
+                  <button disabled={busy || walletMismatch} onClick={mode === 'deposit' ? deposit : withdraw} className="h-9 rounded-lg bg-[#f5f257] px-3 text-sm font-semibold text-[#08090a] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60">{walletMismatch ? 'Wrong wallet' : step === 'approving' ? 'Approving...' : step === 'depositing' ? 'Depositing...' : step === 'withdrawing' ? 'Withdrawing...' : wrongNetwork ? `Switch + ${mode}` : mode === 'deposit' ? 'Deposit' : 'Withdraw'}</button>
                 </div>
 
                 <div className="grid gap-2 sm:grid-cols-2">
