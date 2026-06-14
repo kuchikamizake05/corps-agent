@@ -9,9 +9,19 @@
     "deploy": "npx vercel --prod"
   },
   "dependencies": {
+    "@metamask/connect-evm": "^1.4.0",
+    "@reown/appkit": "^1.8.20",
+    "@reown/appkit-adapter-wagmi": "^1.8.20",
+    "@tanstack/react-query": "^5.101.0",
+    "@walletconnect/ethereum-provider": "^2.23.9",
+    "accounts": "^0.14.6",
     "next": "^14.2.0",
+    "ogl": "^1.0.11",
+    "porto": "^0.2.37",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "viem": "^2.52.2",
+    "wagmi": "^3.6.16"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
