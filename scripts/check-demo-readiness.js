@@ -3,6 +3,7 @@ const fs = require('fs')
 const path = require('path')
 
 const root = path.resolve(__dirname, '..')
+const sourceOnly = process.argv.includes('--source')
 
 function readEnv(file) {
   const env = {}
@@ -26,25 +27,36 @@ function item(name, ok, detail) {
   return ok
 }
 
-const rootEnv = { ...readEnv(path.join(root, '.env.example')), ...readEnv(path.join(root, '.env')) }
-const landingEnv = {
-  ...readEnv(path.join(root, 'landing', '.env.example')),
-  ...readEnv(path.join(root, 'landing', '.env.local')),
-  ...readEnv(path.join(root, 'landing', '.env')),
+function sourceFile(...parts) {
+  return fs.existsSync(path.join(root, ...parts))
 }
+
+const rootEnv = sourceOnly
+  ? readEnv(path.join(root, '.env.example'))
+  : { ...readEnv(path.join(root, '.env.example')), ...readEnv(path.join(root, '.env')) }
+const landingEnv = sourceOnly
+  ? readEnv(path.join(root, 'landing', '.env.example'))
+  : {
+      ...readEnv(path.join(root, 'landing', '.env.example')),
+      ...readEnv(path.join(root, 'landing', '.env.local')),
+      ...readEnv(path.join(root, 'landing', '.env')),
+    }
 
 const checks = []
 checks.push(item('Treasury address', isAddress(rootEnv.TREASURY_ADDRESS), rootEnv.TREASURY_ADDRESS || 'missing'))
 checks.push(item('Token address', isAddress(rootEnv.TOKEN), rootEnv.TOKEN || 'missing'))
 checks.push(item('Faucet env for bot', isAddress(rootEnv.TUSDC_FAUCET_ADDRESS), rootEnv.TUSDC_FAUCET_ADDRESS || 'deploy faucet and set TUSDC_FAUCET_ADDRESS'))
 checks.push(item('Faucet env for landing', isAddress(landingEnv.NEXT_PUBLIC_TUSDC_FAUCET_ADDRESS), landingEnv.NEXT_PUBLIC_TUSDC_FAUCET_ADDRESS || 'set NEXT_PUBLIC_TUSDC_FAUCET_ADDRESS before build/deploy'))
-checks.push(item('Telegram bot token', Boolean(rootEnv.TELEGRAM_BOT_TOKEN), rootEnv.TELEGRAM_BOT_TOKEN ? 'configured' : 'set TELEGRAM_BOT_TOKEN on the bot host'))
-checks.push(item('CEO private key for deploy/ops', Boolean(rootEnv.CEO_PRIVATE_KEY), rootEnv.CEO_PRIVATE_KEY ? 'configured' : 'set only on trusted deploy/ops machine'))
-checks.push(item('Landing API routes', fs.existsSync(path.join(root, 'landing', 'src', 'app', 'api', 'proof', 'route.ts')), 'source present'))
-checks.push(item('Deposit demo UI', fs.existsSync(path.join(root, 'landing', 'src', 'app', 'deposit', 'DepositClient.tsx')), 'source present'))
-checks.push(item('Telegram bot source', fs.existsSync(path.join(root, 'agents', 'bot.py')), 'source present'))
+if (!sourceOnly) {
+  checks.push(item('Telegram bot token', Boolean(rootEnv.TELEGRAM_BOT_TOKEN), rootEnv.TELEGRAM_BOT_TOKEN ? 'configured' : 'set TELEGRAM_BOT_TOKEN on the bot host'))
+  checks.push(item('CEO private key for deploy/ops', Boolean(rootEnv.CEO_PRIVATE_KEY), rootEnv.CEO_PRIVATE_KEY ? 'configured' : 'set only on trusted deploy/ops machine'))
+}
+checks.push(item('Landing API routes', sourceFile('landing', 'src', 'app', 'api', 'proof', 'route.ts'), 'source present'))
+checks.push(item('Deposit demo UI', sourceFile('landing', 'src', 'app', 'deposit', 'DepositClient.tsx'), 'source present'))
+checks.push(item('Telegram bot source', sourceFile('agents', 'bot.py'), 'source present'))
+checks.push(item('Tiny faucet source', sourceFile('src', 'TinyUSDCFaucet.sol'), 'source present'))
 
 const ready = checks.every(Boolean)
 console.log('')
-console.log(ready ? 'Demo readiness: PASS' : 'Demo readiness: TODO items remain')
+console.log(ready ? `Demo readiness${sourceOnly ? ' source' : ''}: PASS` : 'Demo readiness: TODO items remain')
 process.exit(ready ? 0 : 1)

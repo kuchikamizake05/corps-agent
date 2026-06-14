@@ -31,3 +31,5 @@ broadcast/
 
 # Local planning notes
 agents/wallets.json
+agents/wallets.sqlite
+agents/wallets.sqlite-*

@@ -33,6 +33,54 @@ contract TestToken {
     }
 }
 
+contract FalseReturnToken {
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+
+    function mint(address to, uint256 amount) external {
+        balanceOf[to] += amount;
+    }
+
+    function approve(address spender, uint256 amount) external returns (bool) {
+        allowance[msg.sender][spender] = amount;
+        return true;
+    }
+
+    function transferFrom(address, address, uint256) external pure returns (bool) {
+        return false;
+    }
+
+    function transfer(address, uint256) external pure returns (bool) {
+        return false;
+    }
+}
+
+contract TransferFalseToken {
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+
+    function mint(address to, uint256 amount) external {
+        balanceOf[to] += amount;
+    }
+
+    function approve(address spender, uint256 amount) external returns (bool) {
+        allowance[msg.sender][spender] = amount;
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+        require(allowance[from][msg.sender] >= amount, "Allowance");
+        allowance[from][msg.sender] -= amount;
+        balanceOf[from] -= amount;
+        balanceOf[to] += amount;
+        return true;
+    }
+
+    function transfer(address, uint256) external pure returns (bool) {
+        return false;
+    }
+}
+
 contract TreasuryV2Test is Test {
     Treasury public treasury;
     TestToken public token;
@@ -83,6 +131,33 @@ contract TreasuryV2Test is Test {
 
     function test_Token() public view {
         assertEq(address(treasury.token()), address(token));
+    }
+
+    function test_TransferOwnershipTwoStep() public {
+        address newOwner = makeAddr("new_owner");
+
+        vm.prank(CEO);
+        treasury.transferOwnership(newOwner);
+
+        assertEq(treasury.owner(), CEO);
+        assertEq(treasury.pendingOwner(), newOwner);
+
+        vm.prank(newOwner);
+        treasury.acceptOwnership();
+
+        assertEq(treasury.owner(), newOwner);
+        assertEq(treasury.pendingOwner(), address(0));
+    }
+
+    function test_RevertIf_NonPendingOwnerAcceptsOwnership() public {
+        address newOwner = makeAddr("new_owner");
+
+        vm.prank(CEO);
+        treasury.transferOwnership(newOwner);
+
+        vm.prank(USER_A);
+        vm.expectRevert("Not pending owner");
+        treasury.acceptOwnership();
     }
 
     // ── Deposit ──
@@ -167,6 +242,22 @@ contract TreasuryV2Test is Test {
         assertEq(treasury.userValue(USER_A), 147.5e18);
     }
 
+    function test_RevertIf_DepositTokenReturnsFalse() public {
+        FalseReturnToken falseToken = new FalseReturnToken();
+
+        vm.prank(CEO);
+        Treasury badTreasury = new Treasury(address(falseToken));
+
+        falseToken.mint(USER_A, 100e18);
+
+        vm.prank(USER_A);
+        falseToken.approve(address(badTreasury), type(uint256).max);
+
+        vm.prank(USER_A);
+        vm.expectRevert("ERC20 operation failed");
+        badTreasury.deposit(100e18);
+    }
+
     function test_PreviewDepositAndWithdraw() public {
         vm.prank(USER_A);
         treasury.deposit(100e18);
@@ -206,6 +297,25 @@ contract TreasuryV2Test is Test {
         assertEq(treasury.totalShares(), 50e18);
         assertEq(treasury.totalAssets(), 50e18);
         assertEq(token.balanceOf(USER_A), userTokenBefore + 50e18);
+    }
+
+    function test_RevertIf_WithdrawTokenReturnsFalse() public {
+        TransferFalseToken falseToken = new TransferFalseToken();
+
+        vm.prank(CEO);
+        Treasury badTreasury = new Treasury(address(falseToken));
+
+        falseToken.mint(USER_A, 100e18);
+
+        vm.prank(USER_A);
+        falseToken.approve(address(badTreasury), type(uint256).max);
+
+        vm.prank(USER_A);
+        badTreasury.deposit(100e18);
+
+        vm.prank(USER_A);
+        vm.expectRevert("ERC20 operation failed");
+        badTreasury.withdraw(1e18);
     }
 
     function test_WithdrawFull() public {

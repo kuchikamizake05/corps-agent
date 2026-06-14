@@ -8,6 +8,7 @@ pragma solidity ^0.8.28;
 contract Treasury {
     IERC20 public token;
     address public owner;
+    address public pendingOwner;
 
     uint256 public totalShares;
     uint256 public totalAssets; // total token balance tracked
@@ -20,6 +21,8 @@ contract Treasury {
     event ProfitRecorded(uint256 grossProfit, uint256 fee, uint256 netProfit, uint256 newAssets);
     event FeeClaimed(address indexed owner, uint256 amount);
     event Payout(address indexed recipient, uint256 amount, string reason);
+    event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event AgentDecision(
         uint256 indexed agentId,
         string action,
@@ -42,7 +45,7 @@ contract Treasury {
     function deposit(uint256 amount) external {
         require(amount > 0, "Zero amount");
 
-        token.transferFrom(msg.sender, address(this), amount);
+        SafeERC20Lite.safeTransferFrom(address(token), msg.sender, address(this), amount);
 
         uint256 minted;
         if (totalShares == 0) {
@@ -70,7 +73,7 @@ contract Treasury {
         totalShares -= shareAmount;
         totalAssets -= amount;
 
-        token.transfer(msg.sender, amount);
+        SafeERC20Lite.safeTransfer(address(token), msg.sender, amount);
 
         emit Withdrawn(msg.sender, shareAmount, amount);
     }
@@ -96,7 +99,7 @@ contract Treasury {
         uint256 amount = pendingOwnerFee;
         require(amount > 0, "No fees to claim");
         pendingOwnerFee = 0;
-        token.transfer(owner, amount);
+        SafeERC20Lite.safeTransfer(address(token), owner, amount);
         emit FeeClaimed(owner, amount);
     }
 
@@ -107,7 +110,7 @@ contract Treasury {
         require(amount <= totalAssets, "Insufficient assets");
 
         totalAssets -= amount;
-        token.transfer(recipient, amount);
+        SafeERC20Lite.safeTransfer(address(token), recipient, amount);
 
         emit Payout(recipient, amount, reason);
     }
@@ -120,6 +123,22 @@ contract Treasury {
         bytes32 evidenceHash
     ) external onlyOwner {
         emit AgentDecision(agentId, action, reason, evidenceHash, block.timestamp);
+    }
+
+    /// @notice Start a two-step ownership transfer.
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "Invalid owner");
+        pendingOwner = newOwner;
+        emit OwnershipTransferStarted(owner, newOwner);
+    }
+
+    /// @notice Accept ownership after the current owner nominates the caller.
+    function acceptOwnership() external {
+        require(msg.sender == pendingOwner, "Not pending owner");
+        address previousOwner = owner;
+        owner = msg.sender;
+        pendingOwner = address(0);
+        emit OwnershipTransferred(previousOwner, msg.sender);
     }
 
     /// @notice User's total value in token
@@ -162,4 +181,21 @@ interface IERC20 {
     function transfer(address to, uint256 amount) external returns (bool);
     function balanceOf(address account) external view returns (uint256);
     function approve(address spender, uint256 amount) external returns (bool);
+}
+
+/// @notice Dependency-free ERC-20 safety wrapper supporting non-standard tokens.
+library SafeERC20Lite {
+    function safeTransfer(address token, address to, uint256 amount) internal {
+        _call(token, abi.encodeWithSelector(IERC20.transfer.selector, to, amount));
+    }
+
+    function safeTransferFrom(address token, address from, address to, uint256 amount) internal {
+        _call(token, abi.encodeWithSelector(IERC20.transferFrom.selector, from, to, amount));
+    }
+
+    function _call(address token, bytes memory data) private {
+        (bool ok, bytes memory returndata) = token.call(data);
+        require(ok, "ERC20 call failed");
+        require(returndata.length == 0 || abi.decode(returndata, (bool)), "ERC20 operation failed");
+    }
 }

@@ -8,6 +8,8 @@ Optional env: TREASURY_ADDRESS, TOKEN, CELO_SEPOLIA_RPC, TUSDC_FAUCET_ADDRESS.
 
 import json
 import os
+import re
+import sqlite3
 import subprocess
 import time
 import urllib.parse
@@ -17,6 +19,10 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 ENV = ROOT / ".env"
 WALLETS = ROOT / "agents" / "wallets.json"
+WALLET_DB = ROOT / "agents" / "wallets.sqlite"
+ADDRESS_RE = re.compile(r"^0x[a-fA-F0-9]{40}$")
+RATE_LIMIT_SECONDS = 2
+LAST_COMMAND_AT: dict[str, float] = {}
 
 if ENV.exists():
     for line in ENV.read_text().splitlines():
@@ -35,14 +41,43 @@ TOKEN_SCALE = 10**6
 PRICE_SCALE = 10**18
 
 
-def load_wallets() -> dict[str, str]:
+def db() -> sqlite3.Connection:
+    conn = sqlite3.connect(WALLET_DB)
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS wallets (user_id TEXT PRIMARY KEY, wallet TEXT NOT NULL, updated_at INTEGER NOT NULL)"
+    )
+    return conn
+
+
+def migrate_wallets_json() -> None:
     if not WALLETS.exists():
-        return {}
-    return json.loads(WALLETS.read_text())
+        return
+    try:
+        wallets = json.loads(WALLETS.read_text())
+    except Exception as exc:
+        print(f"Wallet JSON migration skipped: {exc}")
+        return
+    with db() as conn:
+        for user_id, wallet in wallets.items():
+            if is_address(str(wallet)):
+                conn.execute(
+                    "INSERT OR REPLACE INTO wallets (user_id, wallet, updated_at) VALUES (?, ?, ?)",
+                    (str(user_id), str(wallet), int(time.time())),
+                )
 
 
-def save_wallets(wallets: dict[str, str]) -> None:
-    WALLETS.write_text(json.dumps(wallets, indent=2) + "\n")
+def load_wallet(user_id: str) -> str | None:
+    with db() as conn:
+        row = conn.execute("SELECT wallet FROM wallets WHERE user_id = ?", (user_id,)).fetchone()
+    return row[0] if row else None
+
+
+def save_wallet(user_id: str, wallet: str) -> None:
+    with db() as conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO wallets (user_id, wallet, updated_at) VALUES (?, ?, ?)",
+            (user_id, wallet, int(time.time())),
+        )
 
 
 def cast_uint(signature: str, *args: str) -> int:
@@ -50,6 +85,7 @@ def cast_uint(signature: str, *args: str) -> int:
         ["cast", "call", TREASURY, signature, *args, "--rpc-url", RPC],
         capture_output=True,
         text=True,
+        timeout=20,
     )
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip()[-240:])
@@ -76,7 +112,7 @@ def send(chat_id: int, text: str) -> None:
 
 
 def is_address(value: str) -> bool:
-    return value.startswith("0x") and len(value) == 42
+    return bool(ADDRESS_RE.match(value))
 
 
 def treasury_text() -> str:
@@ -97,7 +133,7 @@ def treasury_text() -> str:
 
 
 def position_text(user_id: str) -> str:
-    wallet = load_wallets().get(user_id)
+    wallet = load_wallet(user_id)
     if not wallet:
         return "Set your wallet first:\n/setwallet 0x..."
     shares = cast_uint("shares(address)(uint256)", wallet)
@@ -150,6 +186,13 @@ def audit_text() -> str:
 
 
 def handle(chat_id: int, user_id: str, text: str) -> None:
+    now = time.time()
+    last = LAST_COMMAND_AT.get(user_id, 0)
+    if now - last < RATE_LIMIT_SECONDS:
+        send(chat_id, "Slow down a moment, then try again.")
+        return
+    LAST_COMMAND_AT[user_id] = now
+
     parts = text.strip().split()
     command = parts[0].lower() if parts else ""
     if command in {"/start", "/help"}:
@@ -162,9 +205,7 @@ def handle(chat_id: int, user_id: str, text: str) -> None:
         if len(parts) != 2 or not is_address(parts[1]):
             send(chat_id, "Usage: /setwallet 0x...")
             return
-        wallets = load_wallets()
-        wallets[user_id] = parts[1]
-        save_wallets(wallets)
+        save_wallet(user_id, parts[1])
         send(chat_id, f"Wallet saved: {parts[1]}")
     elif command == "/position":
         send(chat_id, position_text(user_id))
@@ -183,6 +224,7 @@ def handle(chat_id: int, user_id: str, text: str) -> None:
 def main() -> None:
     if not os.environ.get("TELEGRAM_BOT_TOKEN"):
         raise SystemExit("Missing TELEGRAM_BOT_TOKEN")
+    migrate_wallets_json()
     offset = 0
     while True:
         result = api("getUpdates", {"timeout": 30, "offset": offset})
@@ -196,7 +238,8 @@ def main() -> None:
                 try:
                     handle(chat["id"], str(user["id"]), text)
                 except Exception as exc:
-                    send(chat["id"], f"Command failed: {exc}")
+                    print(f"Command failed for chat={chat['id']} user={user['id']}: {exc}")
+                    send(chat["id"], "Command temporarily unavailable. Please try again soon.")
         time.sleep(1)
 
 

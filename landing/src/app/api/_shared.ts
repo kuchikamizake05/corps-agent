@@ -1,5 +1,6 @@
+import { NextResponse } from 'next/server'
 import { createPublicClient, formatUnits, http, isAddress } from 'viem'
-import { celoSepolia } from 'viem/chains'
+import { celoSepolia } from '../celoSepolia'
 
 export const TREASURY = '0xbC46a13BEEDd08592e69ac0EDF20893416A406de' as const
 export const TOKEN = '0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2' as const
@@ -11,6 +12,26 @@ export const client = createPublicClient({
   chain: celoSepolia,
   transport: http(process.env.CELO_SEPOLIA_RPC || 'https://forno.celo-sepolia.celo-testnet.org'),
 })
+
+export function rpcError() {
+  return NextResponse.json(
+    {
+      ok: false,
+      error: 'RPC_UNAVAILABLE',
+      message: 'Unable to read Celo Sepolia right now',
+    },
+    { status: 503 },
+  )
+}
+
+export async function withRpc<T>(handler: () => Promise<T | Response>) {
+  try {
+    return await handler()
+  } catch (error) {
+    console.error('Celo RPC read failed', error)
+    return rpcError()
+  }
+}
 
 export const treasuryAbi = [
   { type: 'function', name: 'shares', stateMutability: 'view', inputs: [{ name: 'user', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] },

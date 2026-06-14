@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppKit } from '@reown/appkit/react'
 import { formatUnits, parseUnits } from 'viem'
 import { useAccount, usePublicClient, useSwitchChain, useWriteContract } from 'wagmi'
-import { celoSepolia } from 'viem/chains'
+import { celoSepolia } from '../celoSepolia'
 
 const TREASURY = '0xbC46a13BEEDd08592e69ac0EDF20893416A406de' as const
 const TOKEN = '0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2' as const

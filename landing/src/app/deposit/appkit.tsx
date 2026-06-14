@@ -5,7 +5,7 @@ import { createAppKit } from '@reown/appkit/react'
 import type { AppKitNetwork } from '@reown/appkit/networks'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
 import { WagmiProvider } from 'wagmi'
-import { celoSepolia } from 'viem/chains'
+import { celoSepolia } from '../celoSepolia'
 import { ReactNode, useState } from 'react'
 
 export const projectId = 'cf123a0a2dd51e390a60096b99d72bd8'
