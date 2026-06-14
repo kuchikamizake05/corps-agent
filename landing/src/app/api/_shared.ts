@@ -6,7 +6,7 @@ export const TREASURY = '0xbC46a13BEEDd08592e69ac0EDF20893416A406de' as const
 export const TOKEN = '0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2' as const
 export const FAUCET = process.env.NEXT_PUBLIC_TUSDC_FAUCET_ADDRESS || ''
 export const EXPLORER = 'https://sepolia.celoscan.io'
-export const DECIMALS = 6
+export const DECIMALS = 18
 
 export const client = createPublicClient({
   chain: celoSepolia,
@@ -44,14 +44,14 @@ export const treasuryAbi = [
 ] as const
 
 export function asToken(value: bigint, digits = 6) {
-  return Number(formatUnits(value, DECIMALS)).toLocaleString(undefined, {
+  return Number(formatUnits(value, DECIMALS)).toLocaleString('en-US', {
     maximumFractionDigits: digits,
     minimumFractionDigits: digits,
   })
 }
 
 export function asPrice(value: bigint) {
-  return Number(formatUnits(value, 18)).toLocaleString(undefined, {
+  return Number(formatUnits(value, 18)).toLocaleString('en-US', {
     maximumFractionDigits: 4,
     minimumFractionDigits: 4,
   })

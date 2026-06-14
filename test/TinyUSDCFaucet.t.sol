@@ -23,6 +23,7 @@ contract TinyUSDCFaucetTest is Test {
         vm.prank(user);
         faucet.claim();
 
+        assertEq(faucet.claimAmount(), 100e6);
         assertEq(token.balanceOf(user), 100e6);
         assertTrue(faucet.canClaim(user));
 

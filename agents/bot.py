@@ -16,6 +16,11 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+try:
+    from agents.token_units import TokenUnits, cast_binary
+except ModuleNotFoundError:
+    from token_units import TokenUnits, cast_binary
+
 ROOT = Path(__file__).parent.parent
 ENV = ROOT / ".env"
 WALLETS = ROOT / "agents" / "wallets.json"
@@ -37,8 +42,15 @@ FAUCET = os.environ.get("TUSDC_FAUCET_ADDRESS", "")
 EXPLORER = "https://sepolia.celoscan.io"
 LAST_DEPOSIT_TX = os.environ.get("LAST_DEPOSIT_TX", "0x4a8e6b78172304d5e9fcfd3c9b384ac8738d020b800a51667a94edaadde0004d")
 LAST_PROFIT_TX = os.environ.get("LAST_PROFIT_TX", "0xff511ef3667e60c24373d59a0d114740068d8324241efe0cadf59c618198c08e")
-TOKEN_SCALE = 10**6
 PRICE_SCALE = 10**18
+_TOKEN_UNITS: TokenUnits | None = None
+
+
+def token_units() -> TokenUnits:
+    global _TOKEN_UNITS
+    if _TOKEN_UNITS is None:
+        _TOKEN_UNITS = TokenUnits.from_chain(TOKEN, RPC)
+    return _TOKEN_UNITS
 
 
 def db() -> sqlite3.Connection:
@@ -82,7 +94,7 @@ def save_wallet(user_id: str, wallet: str) -> None:
 
 def cast_uint(signature: str, *args: str) -> int:
     result = subprocess.run(
-        ["cast", "call", TREASURY, signature, *args, "--rpc-url", RPC],
+        [cast_binary(), "call", TREASURY, signature, *args, "--rpc-url", RPC],
         capture_output=True,
         text=True,
         timeout=20,
@@ -93,7 +105,7 @@ def cast_uint(signature: str, *args: str) -> int:
 
 
 def token(value: int, digits: int = 6) -> str:
-    return f"{value / TOKEN_SCALE:,.{digits}f}"
+    return token_units().format(value, digits, grouped=True)
 
 
 def price(value: int) -> str:

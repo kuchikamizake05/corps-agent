@@ -9,7 +9,7 @@ import { celoSepolia } from '../celoSepolia'
 const TREASURY = '0xbC46a13BEEDd08592e69ac0EDF20893416A406de' as const
 const TOKEN = '0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2' as const
 const FAUCET = process.env.NEXT_PUBLIC_TUSDC_FAUCET_ADDRESS as `0x${string}` | undefined
-const DECIMALS = 6
+const DECIMALS = 18
 const EXPLORER = 'https://sepolia.celoscan.io'
 const CELO_FAUCET = 'https://faucet.celo.org'
 const APPROVAL_AMOUNT = parseUnits('10000000', DECIMALS)
@@ -42,15 +42,28 @@ function short(address: string) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
-function token(value: bigint, digits = 6) {
-  return Number(formatUnits(value, DECIMALS)).toLocaleString(undefined, {
+function formatDecimal(value: number, digits = 4) {
+  if (!Number.isFinite(value)) return '0'
+  return value.toLocaleString('en-US', {
     maximumFractionDigits: digits,
-    minimumFractionDigits: digits,
+    minimumFractionDigits: value === 0 ? 0 : Math.min(2, digits),
+  })
+}
+
+function token(value: bigint, digits = 4) {
+  return formatDecimal(Number(formatUnits(value, DECIMALS)), digits)
+}
+
+function tokenPrecise(value: bigint, digits = 6) {
+  const parsed = Number(formatUnits(value, DECIMALS))
+  return parsed.toLocaleString('en-US', {
+    maximumFractionDigits: digits,
+    minimumFractionDigits: parsed === 0 ? 0 : Math.min(2, digits),
   })
 }
 
 function price(value: bigint) {
-  return Number(formatUnits(value, 18)).toLocaleString(undefined, { maximumFractionDigits: 4, minimumFractionDigits: 4 })
+  return formatDecimal(Number(formatUnits(value, 18)), 4)
 }
 
 function cooldownLabel(nextClaimTime: bigint, canClaim: boolean) {
@@ -210,106 +223,172 @@ export default function DepositClient() {
   }
 
   return (
-    <div className="min-h-screen bg-[#07080a] text-white">
-      <main className="mx-auto grid min-h-screen w-full max-w-[1180px] items-center gap-4 px-5 py-3 md:grid-cols-[.78fr_1.22fr] md:px-7 md:py-8">
-        <section className="flex flex-col justify-center">
-          <a href="/" className="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[.03] px-3 py-1.5 text-xs font-medium text-zinc-400 transition hover:text-white md:mb-4">Back to landing</a>
-          <p className="text-[11px] font-semibold uppercase tracking-[.22em] text-[#f5f257]">Corps Agent Deposit</p>
-          <h1 className="mt-2 max-w-[560px] text-[clamp(1.95rem,4.8vw,4rem)] font-semibold leading-[.94] tracking-[-.06em] md:mt-3">Deposit through wallet, verify through bot.</h1>
-          <p className="mt-3 max-w-[500px] text-sm leading-6 text-[#a1a7b0] md:mt-4 md:text-[15px]">Get demo funds, deposit tUSDC, inspect vault shares, then withdraw from the same Celo Sepolia flow.</p>
-
-          <div className="mt-5 rounded-2xl bg-white/[.035] p-4 text-sm text-zinc-300 shadow-[0_0_0_1px_rgba(255,255,255,.07)]">
-            <p className="font-semibold text-white">Need test funds?</p>
-            <p className="mt-1.5 text-zinc-400">You need Celo Sepolia CELO for gas and tUSDC for deposit.</p>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              <a className="rounded-full bg-white px-4 py-2 text-center text-xs font-semibold text-black transition hover:-translate-y-px" href={CELO_FAUCET} target="_blank" rel="noreferrer">Get CELO gas</a>
-              <button disabled={busy || !faucetReady || (isConnected && !faucet.canClaim)} onClick={claim} className="rounded-full bg-[#f5f257] px-4 py-2 text-xs font-semibold text-[#08090a] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50">{step === 'claiming' ? 'Claiming...' : 'Claim 100 tUSDC'}</button>
+    <div className="min-h-screen overflow-x-hidden bg-[#07080a] text-white">
+      <main className="mx-auto flex min-h-screen w-full max-w-[1320px] flex-col gap-3 px-4 py-3 sm:px-6 lg:px-8">
+        <header className="grid gap-3 border-b border-white/[.07] pb-3 lg:grid-cols-[1fr_560px] lg:items-end">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <a href="/" className="inline-flex h-7 items-center rounded-md border border-white/10 bg-white/[.035] px-2.5 text-xs font-medium text-zinc-400 transition hover:border-white/20 hover:text-white">Back</a>
+              <p className="text-[10px] font-semibold uppercase text-[#f5f257]">Corps Agent Deposit</p>
             </div>
-            <p className="mt-2 text-xs text-zinc-500">Cooldown: {faucetReady ? cooldownLabel(faucet.nextClaimTime, faucet.canClaim) : 'faucet address not configured'}</p>
+            <div className="mt-2">
+              <h1 className="text-[clamp(2rem,3.1vw,3.1rem)] font-semibold leading-none tracking-normal lg:whitespace-nowrap">Deposit, verify, report.</h1>
+              <p className="mt-2 max-w-[760px] text-sm leading-5 text-[#a1a7b0]">Claim demo tUSDC, deposit into Treasury, then prove the result through the Telegram bot.</p>
+            </div>
           </div>
-        </section>
+          <div className="grid grid-cols-3 gap-2 text-xs">
+            <StatusPill label="Network" value={wrongNetwork ? 'Wrong' : 'Sepolia'} tone={wrongNetwork ? 'bad' : 'ok'} />
+            <StatusPill label="Wallet" value={address ? short(address) : 'Offline'} tone={address ? 'ok' : 'idle'} />
+            <StatusPill label="Faucet" value={faucetReady ? cooldownLabel(faucet.nextClaimTime, faucet.canClaim) : 'Missing'} tone={faucetReady && faucet.canClaim ? 'ok' : 'idle'} />
+          </div>
+        </header>
 
-        <section className="grid gap-3 lg:grid-cols-[1fr_.9fr]">
-          <div className="rounded-[26px] bg-[#0d0f12] p-3 shadow-[0_0_0_1px_rgba(255,255,255,.08),0_24px_80px_rgba(0,0,0,.42)]">
-            <div className="rounded-[22px] bg-[#111318] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.04)]">
-              <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-3">
-                <div><p className="text-[11px] uppercase tracking-[.18em] text-zinc-500">Network</p><h2 className="mt-1 text-lg font-semibold tracking-[-.03em]">Celo Sepolia</h2></div>
-                <span className="rounded-full bg-[#f5f257] px-3 py-1 text-xs font-semibold text-[#08090a]">Reown</span>
+        <section className="grid flex-1 items-start gap-3 lg:grid-cols-[280px_minmax(360px,520px)_minmax(420px,1fr)]">
+          <aside className="self-start rounded-lg border border-white/[.08] bg-[#0d0f12]/90 p-3 shadow-[0_18px_55px_rgba(0,0,0,.28)] lg:h-[430px]">
+            <div>
+              <p className="text-sm font-semibold text-white">Test funds</p>
+              <p className="mt-1 text-sm leading-5 text-zinc-400">Gas first, then claim demo tUSDC.</p>
+              <div className="mt-3 grid gap-2">
+                <a className="inline-flex h-9 items-center justify-center rounded-md bg-white px-3 text-sm font-semibold text-black transition hover:-translate-y-px" href={CELO_FAUCET} target="_blank" rel="noreferrer">Get CELO gas</a>
+                <button disabled={busy || !faucetReady || (isConnected && !faucet.canClaim)} onClick={claim} className="inline-flex h-9 items-center justify-center rounded-md bg-[#f5f257] px-3 text-sm font-semibold text-[#08090a] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50">{step === 'claiming' ? 'Claiming...' : 'Claim 100 tUSDC'}</button>
+              </div>
+              <p className="mt-2 text-xs text-zinc-500">Cooldown: {faucetReady ? cooldownLabel(faucet.nextClaimTime, faucet.canClaim) : 'faucet address not configured'}</p>
+            </div>
+
+            <div className="my-3 h-px bg-white/[.07]" />
+
+            <div>
+              <p className="text-[11px] font-semibold uppercase text-zinc-500">Contracts</p>
+              <div className="mt-2 grid gap-1.5 text-sm text-zinc-400">
+                <LinkRow label="Treasury" href={`${EXPLORER}/address/${TREASURY}`} value={short(TREASURY)} />
+                <LinkRow label="Token" href={`${EXPLORER}/address/${TOKEN}`} value={short(TOKEN)} />
+                {FAUCET ? <LinkRow label="Faucet" href={`${EXPLORER}/address/${FAUCET}`} value={short(FAUCET)} /> : <Row label="Faucet" value="not configured" />}
+              </div>
+            </div>
+          </aside>
+
+          <div className="self-start rounded-lg border border-white/[.08] bg-[#101216] p-2 shadow-[0_24px_70px_rgba(0,0,0,.32)] lg:h-[430px]">
+            <div className="rounded-lg border border-white/[.06] bg-[#151820] p-3">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase text-zinc-500">Wallet module</p>
+                  <h2 className="mt-1 text-lg font-semibold tracking-normal">Celo Sepolia Treasury</h2>
+                </div>
+                <span className="rounded-md bg-[#f5f257] px-2 py-1 text-xs font-semibold text-[#08090a]">Reown</span>
               </div>
 
-              <div className="mt-4 grid grid-cols-2 rounded-full bg-black/30 p-1 text-sm font-semibold">
-                <button className={`rounded-full px-4 py-2 ${mode === 'deposit' ? 'bg-white text-black' : 'text-zinc-400'}`} onClick={() => setMode('deposit')}>Deposit</button>
-                <button className={`rounded-full px-4 py-2 ${mode === 'withdraw' ? 'bg-white text-black' : 'text-zinc-400'}`} onClick={() => setMode('withdraw')}>Withdraw</button>
+              <div className="mt-3 grid grid-cols-2 rounded-lg bg-black/30 p-1 text-sm font-semibold">
+                <button className={`rounded-md px-3 py-1.5 transition ${mode === 'deposit' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'}`} onClick={() => setMode('deposit')}>Deposit</button>
+                <button className={`rounded-md px-3 py-1.5 transition ${mode === 'withdraw' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'}`} onClick={() => setMode('withdraw')}>Withdraw</button>
               </div>
 
-              <div className="mt-4 space-y-3">
+              <div className="mt-3 space-y-2.5">
                 {mode === 'deposit' ? (
                   <label className="block">
-                    <span className="text-[11px] font-medium uppercase tracking-[.16em] text-zinc-500">Amount</span>
-                    <div className="mt-2 flex items-center rounded-2xl bg-black/30 px-4 py-2.5 shadow-[0_0_0_1px_rgba(255,255,255,.08)]">
-                      <input className="w-full bg-transparent text-2xl font-semibold tracking-[-.04em] outline-none" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} />
+                    <span className="text-[11px] font-medium uppercase text-zinc-500">Amount</span>
+                    <div className="mt-1 flex h-14 items-center rounded-lg border border-white/[.08] bg-black/25 px-3 sm:h-12">
+                      <input className="w-full bg-transparent text-3xl font-semibold tracking-normal outline-none sm:text-2xl" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} />
                       <span className="text-sm font-semibold text-zinc-400">tUSDC</span>
                     </div>
                   </label>
                 ) : (
                   <div>
                     <label className="block">
-                      <span className="text-[11px] font-medium uppercase tracking-[.16em] text-zinc-500">Shares</span>
-                      <div className="mt-2 flex items-center rounded-2xl bg-black/30 px-4 py-2.5 shadow-[0_0_0_1px_rgba(255,255,255,.08)]">
-                        <input className="w-full bg-transparent text-2xl font-semibold tracking-[-.04em] outline-none" inputMode="decimal" value={withdrawShares} onChange={(event) => setWithdrawShares(event.target.value)} />
+                      <span className="text-[11px] font-medium uppercase text-zinc-500">Shares</span>
+                      <div className="mt-1 flex h-14 items-center rounded-lg border border-white/[.08] bg-black/25 px-3 sm:h-12">
+                        <input className="w-full bg-transparent text-3xl font-semibold tracking-normal outline-none sm:text-2xl" inputMode="decimal" value={withdrawShares} onChange={(event) => setWithdrawShares(event.target.value)} />
                         <span className="text-sm font-semibold text-zinc-400">shares</span>
                       </div>
                     </label>
                     <div className="mt-2 grid grid-cols-3 gap-2">
-                      {[0.25, 0.5, 1].map((pct) => <button key={pct} onClick={() => fillPercent(pct)} className="rounded-full bg-white/[.06] px-3 py-2 text-xs font-semibold text-zinc-300 transition hover:bg-white/[.1]">{pct * 100}%</button>)}
+                      {[0.25, 0.5, 1].map((pct) => <button key={pct} onClick={() => fillPercent(pct)} className="rounded-lg border border-white/[.08] bg-white/[.04] px-3 py-2 text-xs font-semibold text-zinc-300 transition hover:bg-white/[.08]">{pct * 100}%</button>)}
                     </div>
-                    <p className="mt-2 text-xs text-zinc-500">Preview out: {token(position.previewOut)} tUSDC</p>
+                    <p className="mt-2 text-sm text-zinc-400">Preview out: <span className="font-mono text-white">{token(position.previewOut)} tUSDC</span></p>
                   </div>
                 )}
 
-                <div className="grid gap-2 rounded-2xl bg-black/20 p-3 text-sm text-zinc-400 shadow-[0_0_0_1px_rgba(255,255,255,.06)]">
-                  <div className="flex items-center justify-between gap-4"><span>Wallet</span><strong className="font-mono text-xs text-white">{address ? short(address) : 'not connected'}</strong></div>
-                  <div className="flex items-center justify-between gap-4"><span>Chain</span><strong className={wrongNetwork ? 'text-xs text-red-300' : 'text-xs text-white'}>{wrongNetwork ? 'wrong network' : 'Celo Sepolia'}</strong></div>
-                  <div className="flex items-center justify-between gap-4"><span>Treasury</span><a className="font-mono text-xs text-white hover:text-[#f5f257]" href={`${EXPLORER}/address/${TREASURY}`} target="_blank" rel="noreferrer">{short(TREASURY)}</a></div>
-                  <div className="flex items-center justify-between gap-4"><span>Token</span><a className="font-mono text-xs text-white hover:text-[#f5f257]" href={`${EXPLORER}/address/${TOKEN}`} target="_blank" rel="noreferrer">{short(TOKEN)}</a></div>
-                  <div className="flex items-center justify-between gap-4"><span>Faucet</span>{FAUCET ? <a className="font-mono text-xs text-white hover:text-[#f5f257]" href={`${EXPLORER}/address/${FAUCET}`} target="_blank" rel="noreferrer">{short(FAUCET)}</a> : <strong className="text-xs text-red-300">not configured</strong>}</div>
+                <div className="grid gap-1.5 rounded-lg border border-white/[.07] bg-black/20 p-1.5 text-sm text-zinc-400 sm:grid-cols-2">
+                  <Row label="Wallet" value={address ? short(address) : 'not connected'} mono />
+                  <Row label="Chain" value={wrongNetwork ? 'wrong network' : 'Celo Sepolia'} tone={wrongNetwork ? 'bad' : 'default'} />
                 </div>
 
-                <div className="rounded-2xl bg-[#f5f257]/[.08] p-3 text-sm leading-5 text-[#d9d77a] shadow-[0_0_0_1px_rgba(245,242,87,.12)]">{message}</div>
+                <div className={`rounded-lg border px-3 py-2 text-sm leading-5 ${step === 'error' ? 'border-red-400/20 bg-red-400/[.08] text-red-200' : 'border-[#f5f257]/15 bg-[#f5f257]/[.08] text-[#e8e68a]'}`}>{message}</div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <button disabled={busy} onClick={() => open({ view: 'Connect' })} className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60">{isConnected ? 'Manage wallet' : 'Connect wallet'}</button>
-                  <button disabled={busy} onClick={mode === 'deposit' ? deposit : withdraw} className="rounded-full bg-[#f5f257] px-5 py-2.5 text-sm font-semibold text-[#08090a] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60">{step === 'approving' ? 'Approving...' : step === 'depositing' ? 'Depositing...' : step === 'withdrawing' ? 'Withdrawing...' : wrongNetwork ? `Switch + ${mode}` : mode === 'deposit' ? 'Deposit' : 'Withdraw'}</button>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <button disabled={busy} onClick={() => open({ view: 'Connect' })} className="h-9 rounded-lg bg-white px-3 text-sm font-semibold text-black transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60">{isConnected ? 'Manage wallet' : 'Connect wallet'}</button>
+                  <button disabled={busy} onClick={mode === 'deposit' ? deposit : withdraw} className="h-9 rounded-lg bg-[#f5f257] px-3 text-sm font-semibold text-[#08090a] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60">{step === 'approving' ? 'Approving...' : step === 'depositing' ? 'Depositing...' : step === 'withdrawing' ? 'Withdrawing...' : wrongNetwork ? `Switch + ${mode}` : mode === 'deposit' ? 'Deposit' : 'Withdraw'}</button>
                 </div>
 
-                {explorerUrl ? <a className="block truncate rounded-full border border-white/10 px-4 py-2.5 text-center font-mono text-xs text-zinc-300 transition hover:border-[#f5f257]/40 hover:text-white" href={explorerUrl} target="_blank" rel="noreferrer">View transaction: {short(txHash)}</a> : null}
-                <a className="block rounded-full border border-white/10 px-4 py-2.5 text-center text-sm font-semibold text-zinc-300 transition hover:border-white/20 hover:text-white" href="https://t.me/CorpsAgentBot" target="_blank" rel="noreferrer">Open bot after deposit</a>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {explorerUrl ? <a className="truncate rounded-lg border border-white/10 px-3 py-2 text-center font-mono text-xs text-zinc-300 transition hover:border-[#f5f257]/40 hover:text-white" href={explorerUrl} target="_blank" rel="noreferrer">Tx {short(txHash)}</a> : <div className="rounded-lg border border-white/[.06] px-3 py-2 text-center text-xs text-zinc-600">No transaction yet</div>}
+                  <a className="rounded-lg border border-white/10 px-3 py-2 text-center text-sm font-semibold text-zinc-300 transition hover:border-white/20 hover:text-white" href="https://t.me/CorpsAgentBot" target="_blank" rel="noreferrer">Open bot after deposit</a>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="rounded-[26px] bg-[#0d0f12] p-4 shadow-[0_0_0_1px_rgba(255,255,255,.08)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-[#f5f257]">Your position</p>
-            <div className="mt-4 grid gap-2 text-sm text-zinc-400">
-              <Row label="Wallet" value={address ? short(address) : 'not connected'} mono />
-              <Row label="Shares" value={token(position.shares)} mono />
-              <Row label="Current value" value={`${token(position.userValue)} tUSDC`} mono />
-              <Row label="Share price" value={price(position.sharePrice)} mono />
-              <Row label="Treasury assets" value={`${token(position.totalAssets, 2)} tUSDC`} mono />
-              <Row label="Total shares" value={token(position.totalShares)} mono />
+          <aside className="self-start rounded-lg border border-white/[.08] bg-[#0d0f12]/90 p-3 shadow-[0_18px_55px_rgba(0,0,0,.28)] lg:h-[430px]">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-semibold uppercase text-[#f5f257]">Your position</p>
+                <h2 className="mt-1 text-lg font-semibold tracking-normal">Vault snapshot</h2>
+              </div>
+              <span className="rounded-md border border-white/[.08] bg-black/25 px-2.5 py-1 text-xs text-zinc-400">Live</span>
             </div>
-          </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-2">
+              <Metric label="Current value" value={token(position.userValue)} unit="tUSDC" highlight />
+              <Metric label="Shares" value={tokenPrecise(position.shares)} />
+              <Metric label="Share price" value={price(position.sharePrice)} />
+              <Metric label="Treasury assets" value={token(position.totalAssets)} unit="tUSDC" />
+              <Metric label="Total shares" value={tokenPrecise(position.totalShares)} />
+            </div>
+            <div className="mt-2 rounded-lg border border-white/[.07] bg-black/20 p-2.5">
+              <p className="text-[11px] font-semibold uppercase text-zinc-500">Wallet</p>
+              <p className="mt-2 truncate font-mono text-sm text-white">{address ? address : 'not connected'}</p>
+            </div>
+          </aside>
         </section>
       </main>
     </div>
   )
 }
 
-function Row({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+function Row({ label, value, mono = false, tone = 'default' }: { label: string; value: string; mono?: boolean; tone?: 'default' | 'bad' }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl bg-black/20 px-3 py-2 shadow-[0_0_0_1px_rgba(255,255,255,.05)]">
+    <div className="flex min-w-0 items-center justify-between gap-3 rounded-md bg-black/20 px-2.5 py-1.5">
       <span>{label}</span>
-      <strong className={`${mono ? 'font-mono text-xs' : 'text-sm'} text-white`}>{value}</strong>
+      <strong className={`min-w-0 truncate ${mono ? 'font-mono text-xs' : 'text-sm'} ${tone === 'bad' ? 'text-red-300' : 'text-white'}`}>{value}</strong>
+    </div>
+  )
+}
+
+function LinkRow({ label, href, value }: { label: string; href: string; value: string }) {
+  return (
+    <a className="flex items-center justify-between gap-3 rounded-md bg-black/20 px-2.5 py-1.5 transition hover:bg-white/[.05]" href={href} target="_blank" rel="noreferrer">
+      <span>{label}</span>
+      <strong className="font-mono text-xs text-white">{value}</strong>
+    </a>
+  )
+}
+
+function StatusPill({ label, value, tone }: { label: string; value: string; tone: 'ok' | 'idle' | 'bad' }) {
+  const color = tone === 'ok' ? 'bg-emerald-300' : tone === 'bad' ? 'bg-red-300' : 'bg-zinc-500'
+  return (
+    <div className="rounded-lg border border-white/[.08] bg-white/[.035] px-3 py-2">
+      <p className="text-[10px] font-semibold uppercase text-zinc-500">{label}</p>
+      <p className="mt-1 flex items-center gap-2 truncate font-mono text-[11px] text-white"><span className={`h-1.5 w-1.5 rounded-full ${color}`} />{value}</p>
+    </div>
+  )
+}
+
+function Metric({ label, value, unit, highlight = false }: { label: string; value: string; unit?: string; highlight?: boolean }) {
+  return (
+    <div className={`min-w-0 rounded-lg border p-2.5 ${highlight ? 'border-[#f5f257]/20 bg-[#f5f257]/[.07]' : 'border-white/[.07] bg-black/20'}`}>
+      <p className="truncate text-[10px] font-semibold uppercase text-zinc-500">{label}</p>
+      <p className="mt-1 flex min-w-0 items-baseline gap-1.5">
+        <span className="min-w-0 truncate font-mono text-lg font-semibold text-white">{value}</span>
+        {unit ? <span className="shrink-0 text-xs font-semibold text-zinc-400">{unit}</span> : null}
+      </p>
     </div>
   )
 }

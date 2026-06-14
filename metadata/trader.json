@@ -1,13 +1,18 @@
 {
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Corps Trader Agent",
-  "description": "Trader of Corps Agent — scans treasury balance, executes simulated arbitrage profits (testnet), reports P&L to CEO.",
+  "description": "Trader of Corps Agent. Sends deterministic testnet profit into the treasury and reports the resulting onchain accounting.",
   "agentId": 311,
   "wallet": "0x776802b7B2e3b7f848EdCCB4b0328624140caa4D",
   "chain": "celo-sepolia",
   "services": [
-    { "name": "A2A", "endpoint": "https://celo-agent.example.com/trader" },
-    { "name": "web", "endpoint": "https://celo-agent.example.com" }
+    { "name": "web", "endpoint": "https://corps-agent-site.vercel.app" },
+    { "name": "telegram", "endpoint": "https://t.me/CorpsAgentBot" }
   ],
-  "supportedTrust": ["reputation"]
+  "supportedTrust": ["reputation"],
+  "contracts": {
+    "treasury": "0xbC46a13BEEDd08592e69ac0EDF20893416A406de",
+    "token": "0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2",
+    "faucet": "0x2129ca0C60aB45508bFC66e93f96Df44246FD42C"
+  }
 }

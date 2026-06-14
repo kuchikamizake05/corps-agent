@@ -6,7 +6,7 @@ Multi-agent autonomous company on Celo Sepolia: CEO, Trader, DevOps, and Auditor
 - Telegram bot: https://t.me/CorpsAgentBot
 - Treasury: `0xbC46a13BEEDd08592e69ac0EDF20893416A406de`
 - Test token: `0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2`
-- Test faucet: `0xeFfd3B43F880C89422eEF79E52A374c1217d1934`
+- Test faucet: `0x2129ca0C60aB45508bFC66e93f96Df44246FD42C`
 
 ## Agents
 
@@ -30,7 +30,7 @@ Multi-agent autonomous company on Celo Sepolia: CEO, Trader, DevOps, and Auditor
 - `claimFee()` - Owner claims accrued 5% performance fee.
 - `recordAgentDecision(agentId, action, reason, evidenceHash)` - Emit a public decision log for agent activity.
 
-`TinyUSDCFaucet.sol` is the deployed hackathon demo faucet. It mints 100 tUSDC per claim and has no cooldown so judges can repeat the flow without waiting.
+`TinyUSDCFaucet.sol` is the hackathon demo faucet source. It mints 100 tUSDC per claim based on the configured token decimals and has no cooldown so judges can repeat the flow without waiting.
 
 `TestUSDCFaucet.sol` is the production-ish faucet template. It mints 100 tUSDC per wallet every hour and should be used for a more restricted future faucet deployment.
 
@@ -100,7 +100,7 @@ This intentionally fails until the faucet address and bot/runtime secrets are co
 |---------|----------|---------|----------|
 | Celo Sepolia | Treasury | `0xbC46a13BEEDd08592e69ac0EDF20893416A406de` | https://sepolia.celoscan.io/address/0xbC46a13BEEDd08592e69ac0EDF20893416A406de |
 | Celo Sepolia | tUSDC | `0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2` | https://sepolia.celoscan.io/address/0x1e2B14dF5aef2FD74DAb48DFE94Ea9295a9D89E2 |
-| Celo Sepolia | TinyUSDCFaucet | `0xeFfd3B43F880C89422eEF79E52A374c1217d1934` | https://sepolia.celoscan.io/address/0xeFfd3B43F880C89422eEF79E52A374c1217d1934 |
+| Celo Sepolia | TinyUSDCFaucet | `0x2129ca0C60aB45508bFC66e93f96Df44246FD42C` | https://sepolia.celoscan.io/address/0x2129ca0C60aB45508bFC66e93f96Df44246FD42C |
 
 ## Quick Start
 
@@ -141,7 +141,7 @@ forge script script/DeployFaucet.s.sol:DeployFaucet \
 
 ```text
 src/Treasury.sol             # Treasury vault contract
-src/TestERC20.sol            # 6-decimal tUSDC test token
+src/TestERC20.sol            # Local tUSDC test token
 src/TestUSDCFaucet.sol       # 100 tUSDC demo faucet
 src/TinyUSDCFaucet.sol       # deployed hackathon faucet without cooldown
 test/Treasury.t.sol          # Treasury tests

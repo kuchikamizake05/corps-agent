@@ -30,6 +30,9 @@ jobs:
       - name: Check source readiness
         run: node scripts/check-demo-readiness.js --source
 
+      - name: Run agent regression tests
+        run: python -m unittest discover -s tests -v
+
       - name: Run contract tests
         run: forge test
 

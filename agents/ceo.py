@@ -6,6 +6,11 @@ import subprocess
 import time
 from pathlib import Path
 
+try:
+    from agents.token_units import TokenUnits, cast_binary
+except ModuleNotFoundError:
+    from token_units import TokenUnits, cast_binary
+
 ENV = Path(__file__).parent.parent / ".env"
 if ENV.exists():
     for line in ENV.read_text().splitlines():
@@ -17,12 +22,11 @@ RPC = os.environ.get("CELO_SEPOLIA_RPC", "https://forno.celo-sepolia.celo-testne
 TREASURY = os.environ["TREASURY_ADDRESS"]
 TOKEN = os.environ["TOKEN"]
 CEO_PK = os.environ["CEO_PRIVATE_KEY"]
-TOKEN_SCALE = 10**6
 PRICE_SCALE = 10**18
 
 
 def cast(*args: str) -> subprocess.CompletedProcess:
-    return subprocess.run(["cast", *args], capture_output=True, text=True)
+    return subprocess.run([cast_binary(), *args], capture_output=True, text=True)
 
 
 def parse_uint(result: subprocess.CompletedProcess) -> int:
@@ -33,6 +37,7 @@ def parse_uint(result: subprocess.CompletedProcess) -> int:
 
 
 def main() -> None:
+    units = TokenUnits.from_chain(TOKEN, RPC)
     assets = parse_uint(cast("call", TREASURY, "totalAssets()(uint256)", "--rpc-url", RPC))
     shares = parse_uint(cast("call", TREASURY, "totalShares()(uint256)", "--rpc-url", RPC))
     share_price = parse_uint(cast("call", TREASURY, "sharePrice()(uint256)", "--rpc-url", RPC))
@@ -41,17 +46,17 @@ def main() -> None:
 
     print("=== CEO Report (Agent #310) ===")
     print("ERC-8004: https://sepolia.celoscan.io/token/0x8004A818BFB912233c491871b3d84c89A494BD9e?a=310")
-    print(f"Assets:    {assets / TOKEN_SCALE:.6f} tUSDC")
-    print(f"Shares:    {shares / TOKEN_SCALE:.6f}")
+    print(f"Assets:    {units.format(assets)} tUSDC")
+    print(f"Shares:    {units.format(shares)}")
     print(f"Price:     {share_price / PRICE_SCALE:.6f} tUSDC")
-    print(f"Vault bal: {vault_bal / TOKEN_SCALE:.6f} tUSDC")
-    print(f"Fee owed:  {fee / TOKEN_SCALE:.6f} tUSDC")
+    print(f"Vault bal: {units.format(vault_bal)} tUSDC")
+    print(f"Fee owed:  {units.format(fee)} tUSDC")
     print("")
 
     accounted = assets + fee
     if vault_bal > accounted:
         diff = vault_bal - accounted
-        print(f"Unrecorded profit: {diff / TOKEN_SCALE:.6f} tUSDC")
+        print(f"Unrecorded profit: {units.format(diff)} tUSDC")
         result = cast("send", TREASURY, "recordProfit()", "--private-key", CEO_PK, "--rpc-url", RPC, "--gas-limit", "100000")
         if result.returncode == 0:
             print("Profit recorded.")
@@ -59,14 +64,14 @@ def main() -> None:
             new_assets = parse_uint(cast("call", TREASURY, "totalAssets()(uint256)", "--rpc-url", RPC))
             new_price = parse_uint(cast("call", TREASURY, "sharePrice()(uint256)", "--rpc-url", RPC))
             new_fee = parse_uint(cast("call", TREASURY, "pendingOwnerFee()(uint256)", "--rpc-url", RPC))
-            print(f"   New assets: {new_assets / TOKEN_SCALE:.6f} tUSDC")
+            print(f"   New assets: {units.format(new_assets)} tUSDC")
             print(f"   New price:  {new_price / PRICE_SCALE:.6f} tUSDC")
-            print(f"   Fee:        {new_fee / TOKEN_SCALE:.6f} tUSDC")
+            print(f"   Fee:        {units.format(new_fee)} tUSDC")
         else:
             print(f"Failed: {result.stderr[-200:]}")
 
-    if fee > 0.01 * TOKEN_SCALE:
-        print(f"\nClaiming {fee / TOKEN_SCALE:.6f} tUSDC fee...")
+    if fee > units.parse("0.01"):
+        print(f"\nClaiming {units.format(fee)} tUSDC fee...")
         result = cast("send", TREASURY, "claimFee()", "--private-key", CEO_PK, "--rpc-url", RPC, "--gas-limit", "100000")
         print("Fee claimed." if result.returncode == 0 else f"Failed: {result.stderr[-200:]}")
 
